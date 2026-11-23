@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>바둑 한 판</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&family=Jua&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* 레이아웃: 휴대폰은 한 줄(상대 → 판 → 나 → 버튼), 900px 이상은 판 + 오른쪽 패널. 대담함은 나무판 한 곳에만. */
+  --bg: #e6eaf3;
+  --surface: #ffffff;
+  --ink: #1b2238;
+  --muted: #5c6580;
+  --line: #cdd4e4;
+  --accent: #2b52dc;
+  --accent-deep: #1b3aa8;
+  --accent-ink: #ffffff;
+  --accent-soft: #dde5ff;
+  --bubble: #ffffff;
+  --btn-edge: #c3cbdd;
+  --good: #157f55;
+  --bad: #c43d47;
+  --mark: #ff5a3c;
+  --wood-1: #f2cd8c;
+  --wood-2: #dfac62;
+  --wood-3: #cc9445;
+  --wood-edge: #9c6829;
+  --grid: #4a2e10;
+  --font-display: "Jua", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10162b; --surface: #1a2240; --ink: #e9edf8; --muted: #9aa4c2; --line: #2c3659;
+    --accent: #8aa4ff; --accent-deep: #5674e0; --accent-ink: #0d1430; --accent-soft: #263366;
+    --bubble: #222b4d; --btn-edge: #0b1024; --good: #4cc38f; --bad: #ff7d86;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10162b; --surface: #1a2240; --ink: #e9edf8; --muted: #9aa4c2; --line: #2c3659;
+  --accent: #8aa4ff; --accent-deep: #5674e0; --accent-ink: #0d1430; --accent-soft: #263366;
+  --bubble: #222b4d; --btn-edge: #0b1024; --good: #4cc38f; --bad: #ff7d86;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; color: inherit; }
+h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 400; }
+
+.app {
+  min-height: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 12px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 헤더 */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand svg { width: 34px; height: 34px; flex: none; }
+.brand h1 { font-family: var(--font-display); font-size: 26px; letter-spacing: -0.5px; line-height: 1; }
+.top-actions { display: flex; gap: 8px; align-items: center; }
+
+.icon-btn {
+  width: 44px; height: 44px; border-radius: 14px;
+  border: 2px solid var(--line); background: transparent;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--ink);
+}
+.icon-btn svg { width: 22px; height: 22px; }
+.icon-btn:focus-visible, .btn:focus-visible, .board svg:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.btn {
+  font-family: var(--font-display);
+  font-size: 17px;
+  min-height: 48px;
+  padding: 0 14px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border-radius: 14px;
+  border: 2px solid var(--btn-edge);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 4px 0 var(--btn-edge);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform .08s ease, box-shadow .08s ease, background-color .2s;
+  white-space: nowrap;
+}
+.btn svg { width: 20px; height: 20px; flex: none; }
+.btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--btn-edge); }
+.btn:disabled { opacity: .42; cursor: not-allowed; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent-deep); box-shadow: 0 4px 0 var(--accent-deep); }
+.btn.primary:active:not(:disabled) { box-shadow: 0 1px 0 var(--accent-deep); }
+.btn.big { width: 100%; min-height: 54px; font-size: 20px; }
+.btn.slim { min-height: 44px; font-size: 16px; }
+
+/* 무대 */
+.stage { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; justify-items: center; }
+.board-col {
+  width: min(100%, 640px, max(300px, calc(100vh - 290px)));
+  width: min(100%, 640px, max(300px, calc(100dvh - 290px)));
+  display: flex; flex-direction: column; gap: 10px;
+}
+.side { width: min(100%, 640px); display: flex; flex-direction: column; gap: 12px; }
+
+@media (max-width: 899px) {
+  .side .scorecard { order: -2; }
+  .side .actions { order: -1; }
+  .status { font-size: 20px; }
+}
+@media (min-width: 900px) {
+  .stage { grid-template-columns: auto 300px; justify-content: center; align-items: center; gap: 36px; }
+  .board-col { width: min(640px, max(360px, calc(100vh - 245px))); width: min(640px, max(360px, calc(100dvh - 245px))); }
+  .side { width: 300px; }
+}
+
+/* 플레이어 줄 */
+.pbar { display: flex; align-items: center; gap: 12px; min-height: 56px; }
+.avatar { width: 52px; height: 52px; flex: none; border-radius: 50%; transition: box-shadow .2s; }
+.avatar svg { width: 100%; height: 100%; display: block; }
+.pbar.active .avatar, .pbar.active .me-stone { box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px var(--accent); }
+.pinfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.pname { font-family: var(--font-display); font-size: 19px; line-height: 1.1; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lvchip { font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px; line-height: 1.4; }
+.lv0 { background: #d6f1e2; color: #11573a; }
+.lv1 { background: #fde6bf; color: #6e4300; }
+.lv2 { background: #fddadd; color: #8f1c27; }
+.lv3 { background: #e3dcff; color: #3d2a8c; }
+.nnbar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; margin-top: 6px; }
+.nnbar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.credit { font-size: 12px; color: var(--muted); margin: 0; }
+.credit a { color: inherit; }
+.turn-pill { font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px; background: var(--accent); color: var(--accent-ink); visibility: hidden; }
+.pbar.active .turn-pill { visibility: visible; }
+
+.bubble {
+  position: relative; background: var(--bubble); color: var(--ink);
+  padding: 6px 12px; border-radius: 14px; font-size: 14px; line-height: 1.35;
+  max-width: 100%; min-height: 31px;
+  box-shadow: 0 1px 0 var(--line);
+}
+.bubble::before {
+  content: ""; position: absolute; left: -7px; top: 10px;
+  border-style: solid; border-width: 6px 8px 6px 0; border-color: transparent var(--bubble) transparent transparent;
+}
+.bubble.fresh { animation: bubble-in .28s ease-out; }
+@keyframes bubble-in { from { transform: translateY(4px) scale(.97); opacity: .3; } to { transform: none; opacity: 1; } }
+.dots { display: inline-flex; gap: 4px; padding: 6px 2px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: blink 1s infinite; }
+.dots i:nth-child(2) { animation-delay: .15s; } .dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes blink { 0%, 100% { opacity: .25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+
+.me-stone { width: 40px; height: 40px; border-radius: 50%; flex: none; margin: 0 6px; transition: box-shadow .2s; }
+.me-stone svg { width: 100%; height: 100%; display: block; }
+.me-sub { font-size: 13px; color: var(--muted); }
+
+.lid { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: none; min-width: 52px; }
+.lid-dish {
+  display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 99px;
+  background: linear-gradient(180deg, #e6b875, #c98f43); box-shadow: inset 0 -2px 0 rgba(90,50,10,.35);
+  font-family: var(--font-display); font-size: 17px; color: #3b230b; font-variant-numeric: tabular-nums; min-width: 52px; justify-content: center;
+}
+.lid-label { font-size: 11px; color: var(--muted); }
+.mini { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+.mini.b { background: radial-gradient(circle at 35% 30%, #737a90, #15161c 70%); }
+.mini.w { background: radial-gradient(circle at 35% 30%, #fff, #d4cfc3 80%); box-shadow: 0 0 0 1px rgba(0,0,0,.15); }
+
+/* 바둑판 */
+.board {
+  position: relative; width: 100%; aspect-ratio: 1 / 1; border-radius: 18px;
+  background:
+    radial-gradient(120% 80% at 18% 8%, rgba(255, 244, 214, .55), transparent 55%),
+    repeating-linear-gradient(96deg, rgba(126, 74, 22, .07) 0 2px, transparent 2px 11px),
+    repeating-linear-gradient(92deg, rgba(126, 74, 22, .05) 0 1px, transparent 1px 27px),
+    linear-gradient(165deg, var(--wood-1), var(--wood-2) 55%, var(--wood-3));
+  box-shadow: 0 9px 0 var(--wood-edge), 0 20px 30px rgba(14, 22, 48, .28), inset 0 0 0 2px rgba(255, 255, 255, .28);
+  margin-bottom: 9px;
+}
+.board svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: manipulation; cursor: pointer; border-radius: 18px; }
+.board.locked svg { cursor: progress; }
+.gl { stroke: var(--grid); stroke-width: 1.1; vector-effect: non-scaling-stroke; opacity: .82; }
+.gl.edge { stroke-width: 2; opacity: .9; }
+.hoshi { fill: var(--grid); }
+.sh { fill: rgba(60, 30, 0, .34); }
+.wst { stroke: rgba(0, 0, 0, .2); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.drop { transform-box: fill-box; transform-origin: center; animation: drop .32s cubic-bezier(.2, .9, .3, 1.25); }
+@keyframes drop { 0% { transform: scale(1.3) translateY(-8%); opacity: 0; } 55% { opacity: 1; transform: scale(.95); } 100% { transform: scale(1); } }
+.pop { transform-box: fill-box; transform-origin: center; animation: pop .5s ease-in forwards; }
+@keyframes pop { 0% { opacity: 1; transform: none; } 100% { opacity: 0; transform: scale(1.35) translateY(-25%); } }
+.dead { opacity: .4; }
+.lastmark { fill: var(--mark); stroke: rgba(255,255,255,.85); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.ghost { opacity: .5; pointer-events: none; }
+.cross { stroke: var(--accent-deep); stroke-width: 1.5; vector-effect: non-scaling-stroke; opacity: .6; }
+.hintring { fill: rgba(43, 82, 220, .18); stroke: #2b52dc; stroke-width: 3; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; animation: pulse 1.1s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { transform: scale(.82); } 50% { transform: scale(1.04); } }
+.cursor { fill: none; stroke: #2b52dc; stroke-width: 2.5; vector-effect: non-scaling-stroke; }
+.terr-b { fill: #17181f; }
+.terr-w { fill: #fbfaf5; stroke: rgba(0, 0, 0, .45); stroke-width: 1; vector-effect: non-scaling-stroke; }
+
+/* 오른쪽 패널 */
+.status { font-family: var(--font-display); font-size: 23px; line-height: 1.2; min-height: 28px; }
+.meta { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.actions.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.actions[hidden] { display: none; }
+@media (max-width: 899px) {
+  #actPlay .btn { flex-direction: column; gap: 2px; padding: 6px 4px; min-height: 60px; font-size: 15px; }
+}
+@media (min-width: 900px) { #actPlay { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.scorecard { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 10px; align-items: center; font-variant-numeric: tabular-nums; font-size: 14px; }
+.scorecard[hidden] { display: none; }
+.scorecard .tot { font-family: var(--font-display); font-size: 20px; text-align: right; }
+.scorecard .lead { color: var(--good); }
+.tip { font-size: 13px; color: var(--muted); border-left: 3px solid var(--line); padding-left: 10px; }
+
+/* 시트 */
+.scrim { position: fixed; inset: 0; background: rgba(9, 13, 30, .5); display: none; align-items: flex-end; justify-content: center; padding: 12px; z-index: 40; }
+.scrim.open { display: flex; }
+@media (min-width: 640px) { .scrim { align-items: center; } }
+.sheet {
+  background: var(--surface); color: var(--ink); width: min(500px, 100%);
+  max-height: calc(100% - 8px); overflow: auto; border-radius: 26px; padding: 20px 18px 18px;
+  box-shadow: 0 24px 60px rgba(5, 10, 30, .35); animation: rise .26s ease-out;
+  display: flex; flex-direction: column; gap: 16px;
+}
+@keyframes rise { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.sheet:focus { outline: none; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sheet h2 { font-family: var(--font-display); font-size: 26px; line-height: 1.15; }
+.sr { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.opps { display: flex; flex-direction: column; gap: 8px; }
+.opp {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 18px;
+  border: 2px solid var(--line); cursor: pointer; transition: border-color .15s, background-color .15s;
+}
+.opp .avatar { width: 50px; height: 50px; }
+.otext { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.oname { font-family: var(--font-display); font-size: 19px; display: flex; gap: 8px; align-items: center; }
+.odesc { font-size: 13px; color: var(--muted); }
+.orec { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+input:checked + .opp { border-color: var(--accent); background: var(--accent-soft); }
+input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var(--accent); outline-offset: 2px; }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.flabel { font-family: var(--font-display); font-size: 17px; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.seg label {
+  display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 4px; border-radius: 14px;
+  border: 2px solid var(--line); cursor: pointer; text-align: center; transition: border-color .15s, background-color .15s;
+}
+.seg label b { font-family: var(--font-display); font-weight: 400; font-size: 18px; }
+.seg label small { font-size: 12px; color: var(--muted); }
+.seg input:checked + label { border-color: var(--accent); background: var(--accent-soft); }
+.fine { font-size: 12px; color: var(--muted); margin: -4px 0 0; text-align: center; }
+
+.result-hero { display: flex; align-items: center; gap: 14px; }
+.result-hero .avatar { width: 64px; height: 64px; }
+.result-title { font-family: var(--font-display); font-size: 32px; line-height: 1.1; }
+.result-title.win { color: var(--good); }
+.result-sub { color: var(--muted); font-size: 14px; }
+.rtable { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 14px; }
+.rtable th, .rtable td { padding: 7px 4px; text-align: right; border-bottom: 1px solid var(--line); }
+.rtable th:first-child, .rtable td:first-child { text-align: left; }
+.rtable th { font-weight: 600; color: var(--muted); font-size: 12px; }
+.rtable td.sum { font-family: var(--font-display); font-size: 18px; }
+.rquote { background: var(--accent-soft); border-radius: 14px; padding: 10px 12px; font-size: 14px; }
+.row-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0;
+  background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 14px; font-size: 14px;
+  max-width: calc(100% - 32px); text-align: center; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 60;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <defs>
+          <radialGradient id="lgB" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#727a92"/><stop offset=".45" stop-color="#262a35"/><stop offset="1" stop-color="#090a0e"/></radialGradient>
+          <radialGradient id="lgW" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#efebe2"/><stop offset="1" stop-color="#c6c0b2"/></radialGradient>
+        </defs>
+        <circle cx="25" cy="23" r="12" fill="url(#lgW)" stroke="rgba(0,0,0,.2)"/>
+        <circle cx="15" cy="16" r="12" fill="url(#lgB)"/>
+      </svg>
+      <h1>바둑 한 판</h1>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="btnSound" type="button" aria-label="소리 끄기"></button>
+      <button class="btn slim" id="btnNew" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>새 게임
+      </button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <section class="board-col" aria-label="대국">
+      <div class="pbar" id="oppBar">
+        <div class="avatar" id="oppAvatar"></div>
+        <div class="pinfo">
+          <div class="pname"><span id="oppName">몽이</span><span class="lvchip lv1" id="oppLv">중</span><span class="turn-pill">차례</span></div>
+          <div class="bubble" id="oppBubble" aria-live="polite">한 판 해 볼까요?</div>
+        </div>
+        <div class="lid" title="상대가 잡은 돌">
+          <div class="lid-dish"><span class="mini b" id="oppCapStone"></span><span id="oppCaps">0</span></div>
+          <span class="lid-label">따낸 돌</span>
+        </div>
+      </div>
+
+      <div class="board" id="board">
+        <svg id="svg" viewBox="0 0 960 960" tabindex="0" aria-label="바둑판. 방향키로 움직이고 Enter로 둡니다.">
+          <defs>
+            <radialGradient id="gB" cx="36%" cy="30%" r="72%"><stop offset="0" stop-color="#6f768c"/><stop offset=".38" stop-color="#282b36"/><stop offset="1" stop-color="#08090d"/></radialGradient>
+            <radialGradient id="gW" cx="36%" cy="30%" r="78%"><stop offset="0" stop-color="#ffffff"/><stop offset=".58" stop-color="#f1eee6"/><stop offset="1" stop-color="#c7c1b3"/></radialGradient>
+          </defs>
+          <g id="gGrid"></g>
+          <g id="gStones"></g>
+          <g id="gTerr"></g>
+          <g id="gFx"></g>
+          <g id="gMarks"></g>
+        </svg>
+      </div>
+
+      <div class="pbar" id="meBar">
+        <div class="me-stone" id="meStone"></div>
+        <div class="pinfo">
+          <div class="pname"><span>나</span><span class="turn-pill">차례</span></div>
+          <div class="me-sub" id="meSub">흑 · 먼저 둬요</div>
+        </div>
+        <div class="lid" title="내가 잡은 돌">
+          <div class="lid-dish"><span class="mini w" id="meCapStone"></span><span id="meCaps">0</span></div>
+          <span class="lid-label">따낸 돌</span>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div>
+        <div class="status" id="status" aria-live="polite">새 게임을 골라 주세요</div>
+        <div class="meta" id="meta">9×9 · 덤 6.5</div>
+      </div>
+      <div class="scorecard" id="scorecard" hidden></div>
+      <div class="actions" id="actPlay">
+        <button class="btn" id="btnUndo" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>무르기</button>
+        <button class="btn" id="btnHint" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21.5h4"/><path d="M12 2.5a6.5 6.5 0 0 0-3.8 11.8c.6.5.9 1.1.9 1.8V16h5.8v-.1c0-.7.3-1.3.9-1.8A6.5 6.5 0 0 0 12 2.5z"/></svg>힌트</button>
+        <button class="btn" id="btnPass" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5v13l9-6.5z"/><path d="M18.5 5.5v13"/></svg>패스</button>
+        <button class="btn" id="btnResign" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 21V3.5"/><path d="M5.5 4h12l-2.5 4.5L17.5 13h-12"/></svg>기권</button>
+      </div>
+      <div class="actions two" id="actScore" hidden>
+        <button class="btn" id="btnResume" type="button">계속 두기</button>
+        <button class="btn primary" id="btnFinish" type="button">결과 보기</button>
+      </div>
+      <div class="actions two" id="actOver" hidden>
+        <button class="btn primary" id="btnAgain" type="button">한 판 더</button>
+        <button class="btn" id="btnShowResult" type="button">결과 다시 보기</button>
+      </div>
+      <p class="tip" id="tip">돌을 놓을 자리를 탭하세요. 상대 돌을 둘러싸면 따낼 수 있어요.</p>
+    </aside>
+  </main>
+</div>
+
+<!-- 새 게임 -->
+<div class="scrim" id="setupScrim">
+  <div class="sheet" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+    <div class="sheet-head">
+      <h2 id="setupTitle">누구랑 둘까요?</h2>
+      <button class="icon-btn" id="setupClose" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="opps" id="oppList" role="radiogroup" aria-label="상대 고르기"></div>
+    <div class="field">
+      <div class="flabel" id="lblSize">바둑판 크기</div>
+      <div class="seg" role="radiogroup" aria-labelledby="lblSize">
+        <input class="sr" type="radio" name="size" id="size9" value="9"><label for="size9"><b>9×9</b><small>빠른 한 판</small></label>
+        <input class="sr" type="radio" name="size" id="size13" value="13"><label for="size13"><b>13×13</b><small>적당한 길이</small></label>
+        <input class="sr" type="radio" name="size" id="size19" value="19"><label for="size19"><b>19×19</b><small>정식 대국</small></label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="flabel" id="lblColor">내 돌</div>
+      <div class="seg" role="radiogroup" aria-labelledby="lblColor">
+        <input class="sr" type="radio" name="color" id="colB" value="black"><label for="colB"><b>흑</b><small>내가 먼저</small></label>
+        <input class="sr" type="radio" name="color" id="colW" value="white"><label for="colW"><b>백</b><small>덤 6.5 받기</small></label>
+        <input class="sr" type="radio" name="color" id="colR" value="random"><label for="colR"><b>무작위</b><small>운에 맡기기</small></label>
+      </div>
+    </div>
+    <button class="btn primary big" id="btnStart" type="button">대국 시작</button>
+    <p class="fine">살아 있는 돌과 집을 더해 계가해요. 백은 덤 6.5를 받아요.</p>
+    <p class="credit">프로 AI(청룡)는 KataGo의 공개 신경망(g170e-b10c128, © David J Wu, MIT 라이선스)으로 둬요. <a href="nn/LICENSE-KataGo.txt" target="_blank" rel="noopener">라이선스 보기</a></p>
+  </div>
+</div>
+
+<!-- 결과 -->
+<div class="scrim" id="resultScrim">
+  <div class="sheet" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="sheet-head">
+      <div class="result-hero">
+        <div class="avatar" id="resAvatar"></div>
+        <div>
+          <h2 class="result-title" id="resultTitle">이겼어요!</h2>
+          <div class="result-sub" id="resultSub"></div>
+        </div>
+      </div>
+      <button class="icon-btn" id="resultClose" type="button" aria-label="닫고 판 보기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div id="resultBody"></div>
+    <div class="rquote" id="resultQuote"></div>
+    <div class="row-btns">
+      <button class="btn primary" id="resAgain" type="button">한 판 더</button>
+      <button class="btn" id="resSetup" type="button">상대 바꾸기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 확인 -->
+<div class="scrim" id="confirmScrim">
+  <div class="sheet" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <h2 id="confirmTitle">기권할까요?</h2>
+    <p id="confirmText" style="margin:0;color:var(--muted)">이번 판은 패배로 기록돼요.</p>
+    <div class="row-btns">
+      <button class="btn" id="confirmNo" type="button">계속 둘래요</button>
+      <button class="btn primary" id="confirmYes" type="button">기권하기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script id="engine-src">
+/*__ENGINE__*/
+</script>
+<script id="nn-src">
+/*__NNJS__*/
+</script>
+<script>
+/*__PRO__*/
+const NN_WASM_B64 = '/*__WASM__*/';
+const NN_META = /*__META__*/;
+</script>
+<script>
+(() => {
+  'use strict';
+  const $ = (s) => document.querySelector(s);
+  const NS = 'http://www.w3.org/2000/svg';
+  const CS = 100, CM = 80; // 칸 크기, 여백 (viewBox 단위)
+  const STORE_KEY = 'baduk-hanpan-game-v1', STATS_KEY = 'baduk-hanpan-stats-v1', PREF_KEY = 'baduk-hanpan-prefs-v1';
+  const store = {
+    get(k) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* 저장 불가 */ } },
+    del(k) { try { localStorage.removeItem(k); } catch (e) { /* 무시 */ } }
+  };
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const pick = (a) => a[(Math.random() * a.length) | 0];
+  const hasBatchim = (s) => { const c = s.charCodeAt(s.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; };
+  const iga = (s) => s + (hasBatchim(s) ? '이' : '가');
+  const colorName = (c) => (c === BLACK ? '흑' : '백');
+  const fmt = (x) => (Number.isInteger(x) ? String(x) : x.toFixed(1));
+
+  // ---- 캐릭터 ----
+  const CHAR = [
+    {
+      name: '콩이', lv: '하', title: '입문', desc: '바둑 배운 지 일주일. 단수만 보이면 일단 따내요.',
+      greet: ['잘 부탁해요! 살살 해 주세요.', '우와, 바둑이다! 시작해요.'],
+      move: ['여기 둘래요!', '헤헤, 뒀어요.', '이거 좋은 수 맞죠?', '음, 여기가 좋아 보여요.', '이번엔 여기!'],
+      capAI: ['냠! 잡았다!', '앗싸, 따냈어요!'],
+      capUser: ['어, 내 돌이 없어졌어요!', '으앙, 잡혔다…', '거기 두면 잡히는 거였어요?'],
+      pass: ['더 둘 데가 없어 보여요. 패스!'],
+      keepGoing: ['앗, 아직 둘 곳이 있어요!'],
+      hint: ['힌트 봤죠? 괜찮아요, 저도 가끔 봐요.'],
+      undo: ['무르기? 좋아요, 다시 해요.'],
+      resign: ['항복이에요… 너무 잘해요!'],
+      aiWin: ['제가 이겼어요? 믿기지 않아요!'],
+      aiLose: ['역시 잘하시네요! 한 판 더 해요.']
+    },
+    {
+      name: '몽이', lv: '중', title: '중급', desc: '동네 기원 단골. 한 수에 수천 판을 읽어요.',
+      greet: ['한 판 해 볼까요?', '오늘은 제가 이길 거예요.'],
+      move: ['이 정도면 괜찮죠.', '여기는 제 집이에요.', '흐음, 이렇게 받을게요.', '좋은 승부네요.', '이 수는 어때요?'],
+      capAI: ['이 돌은 제가 가져갈게요.', '단수였어요!'],
+      capUser: ['앗, 놓쳤다.', '제법인데요?', '그건 생각 못 했네요.'],
+      pass: ['저는 패스할게요.'],
+      keepGoing: ['아직 끝나지 않았어요!'],
+      hint: ['힌트 썼죠? 다 봤어요.'],
+      undo: ['한 번 봐 드릴게요.'],
+      resign: ['졌어요. 기권할게요!'],
+      aiWin: ['좋은 판이었어요. 다음에 또 해요.'],
+      aiLose: ['분하다… 다음엔 안 질 거예요!']
+    },
+    {
+      name: '돌왕', lv: '상', title: '고수', desc: '모양과 축까지 보는 고수. 한 수에 수만 판을 둬 봐요.',
+      greet: ['봐주지 않을 거예요.', '준비됐나요? 시작하죠.'],
+      move: ['계산대로예요.', '흐름은 제 쪽이네요.', '여기가 급소예요.', '흠, 그렇게 오셨군요.', '좋아요, 받아 드리죠.'],
+      capAI: ['욕심이 과했네요.', '그 돌은 이미 끝났어요.'],
+      capUser: ['오, 날카롭네요.', '그걸 보다니!', '제가 방심했군요.'],
+      pass: ['더 둘 곳은 없어요. 패스.'],
+      keepGoing: ['아직 승부는 남았어요.'],
+      hint: ['힌트로는 저를 못 이겨요.'],
+      undo: ['무르기라… 이번만이에요.'],
+      resign: ['제 패배예요. 대단해요.'],
+      aiWin: ['다음엔 더 날카롭게 와 주세요.'],
+      aiLose: ['완벽하게 졌어요. 존경합니다.']
+    },
+    {
+      name: '청룡', lv: '프로', title: '신경망', desc: 'KataGo 신경망으로 두는 프로급 AI. 기기가 빠를수록 더 깊이 읽어요.',
+      greet: ['진검승부를 시작하죠.', '한 수 부탁드립니다.'],
+      move: ['이 수가 최선이에요.', '흐름을 읽었어요.', '여기가 급소입니다.', '정석대로 가죠.', '형세를 다시 봐야겠네요.'],
+      capAI: ['이 돌은 이미 살 수 없었어요.', '수읽기대로예요.'],
+      capUser: ['좋은 수읽기네요.', '그걸 보셨군요.', '예상 밖이에요.'],
+      pass: ['더 둘 곳이 없네요. 패스.'],
+      keepGoing: ['아직 끝나지 않았어요.'],
+      hint: ['힌트도 결국 제 수읽기예요.'],
+      undo: ['다시 둬 보세요.'],
+      resign: ['제가 졌습니다. 훌륭한 바둑이었어요.'],
+      aiWin: ['좋은 대국이었어요. 또 도전해 주세요.'],
+      aiLose: ['완패입니다. 대단하세요!']
+    }
+  ];
+
+  let avId = 0;
+  function avatarSVG(level, stone) {
+    const id = 'av' + (++avId);
+    const dark = stone === BLACK;
+    const grad = dark
+      ? `<radialGradient id="${id}" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#767d93"/><stop offset=".42" stop-color="#2a2e3a"/><stop offset="1" stop-color="#0a0b10"/></radialGradient>`
+      : `<radialGradient id="${id}" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f0ece3"/><stop offset="1" stop-color="#c6c0b2"/></radialGradient>`;
+    const ink = dark ? '#ffffff' : '#1d2030';
+    let face = `<ellipse cx="24.5" cy="34" rx="3.3" ry="3.8" fill="${ink}"/><ellipse cx="39.5" cy="34" rx="3.3" ry="3.8" fill="${ink}"/>`;
+    face += `<circle cx="25.6" cy="32.6" r="1.1" fill="${dark ? '#1d2030' : '#ffffff'}"/><circle cx="40.6" cy="32.6" r="1.1" fill="${dark ? '#1d2030' : '#ffffff'}"/>`;
+    face += `<ellipse cx="18.5" cy="41.5" rx="3.6" ry="2.2" fill="#ff8f9a" opacity=".65"/><ellipse cx="45.5" cy="41.5" rx="3.6" ry="2.2" fill="#ff8f9a" opacity=".65"/>`;
+    face += `<path d="M28.5 42.5 Q32 46 35.5 42.5" stroke="${ink}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    let acc = '';
+    if (level === 0) {
+      acc = `<path d="M32 15 C32 12 32 10 32 8" stroke="#3a9a5b" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
+        + `<ellipse cx="26.5" cy="8" rx="6" ry="3.3" fill="#62c47f" transform="rotate(-24 26.5 8)"/>`
+        + `<ellipse cx="37.5" cy="7" rx="6" ry="3.3" fill="#4daf6a" transform="rotate(26 37.5 7)"/>`;
+    } else if (level === 1) {
+      acc = `<g fill="none" stroke="${dark ? '#f2c14e' : '#2a2f45'}" stroke-width="2.1"><circle cx="24.5" cy="34" r="6.4"/><circle cx="39.5" cy="34" r="6.4"/><path d="M30.6 33.4 Q32 31.8 33.4 33.4"/></g>`;
+    } else if (level === 3) {
+      acc = `<path d="M22 17 C19 11 19 7 22 3 C23.5 8 25.5 12 28 15.5 Z" fill="#7fd6c4" stroke="#2c8c79" stroke-width="1.5" stroke-linejoin="round"/>`
+        + `<path d="M42 17 C45 11 45 7 42 3 C40.5 8 38.5 12 36 15.5 Z" fill="#7fd6c4" stroke="#2c8c79" stroke-width="1.5" stroke-linejoin="round"/>`
+        + `<path d="M32 21.5 L34.6 24.6 L32 27.7 L29.4 24.6 Z" fill="#5b8cff" stroke="#2f4fb8" stroke-width="1"/>`
+        + `<path d="M19 30 L28 31 M45 30 L36 31" stroke="${ink}" stroke-width="2.1" stroke-linecap="round"/>`;
+    } else {
+      acc = `<path d="M18.5 28 L28 30.3 M45.5 28 L36 30.3" stroke="${ink}" stroke-width="2.3" stroke-linecap="round"/>`
+        + `<path d="M19 17 L21.5 6 L27 12.5 L32 3.5 L37 12.5 L42.5 6 L45 17 Z" fill="#f5c443" stroke="#c98d17" stroke-width="1.6" stroke-linejoin="round"/>`
+        + `<circle cx="32" cy="11.8" r="1.9" fill="#e8484f"/>`;
+    }
+    return `<svg viewBox="0 0 64 64" aria-hidden="true"><defs>${grad}</defs><ellipse cx="33" cy="59.5" rx="16" ry="2.8" fill="rgba(0,0,0,.16)"/><circle cx="32" cy="36" r="22" fill="url(#${id})"${dark ? '' : ' stroke="rgba(0,0,0,.15)"'}/>${face}${acc}</svg>`;
+  }
+  function stoneIconSVG(stone) {
+    const id = 'si' + (++avId);
+    const g = stone === BLACK
+      ? `<radialGradient id="${id}" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#767d93"/><stop offset=".42" stop-color="#2a2e3a"/><stop offset="1" stop-color="#0a0b10"/></radialGradient>`
+      : `<radialGradient id="${id}" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f0ece3"/><stop offset="1" stop-color="#c6c0b2"/></radialGradient>`;
+    return `<svg viewBox="0 0 40 40" aria-hidden="true"><defs>${g}</defs><circle cx="20" cy="20" r="19" fill="url(#${id})"${stone === BLACK ? '' : ' stroke="rgba(0,0,0,.18)"'}/></svg>`;
+  }
+
+  // ---- 소리 ----
+  const Sound = {
+    ctx: null, on: true, noise: null,
+    ensure() {
+      if (!this.on) return;
+      try {
+        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+      } catch (e) { this.ctx = null; }
+    },
+    noiseBuf() {
+      if (this.noise) return this.noise;
+      const ctx = this.ctx, len = Math.floor(ctx.sampleRate * 0.06), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+      return (this.noise = buf);
+    },
+    stone(vol = 1) {
+      if (!this.on || !this.ctx) return;
+      try {
+        const ctx = this.ctx, t = ctx.currentTime;
+        const src = ctx.createBufferSource(); src.buffer = this.noiseBuf();
+        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 0.9;
+        const g = ctx.createGain(); g.gain.setValueAtTime(0.9 * vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+        src.connect(bp).connect(g).connect(ctx.destination); src.start(t);
+        const o = ctx.createOscillator(); o.type = 'sine';
+        o.frequency.setValueAtTime(520, t); o.frequency.exponentialRampToValueAtTime(170, t + 0.09);
+        const g2 = ctx.createGain(); g2.gain.setValueAtTime(0.32 * vol, t); g2.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+        o.connect(g2).connect(ctx.destination); o.start(t); o.stop(t + 0.13);
+      } catch (e) { /* 무시 */ }
+    },
+    tone(freqs, step, type = 'triangle', vol = 0.18) {
+      if (!this.on || !this.ctx) return;
+      try {
+        const ctx = this.ctx, t0 = ctx.currentTime;
+        freqs.forEach((f, i) => {
+          const t = t0 + i * step, o = ctx.createOscillator(), g = ctx.createGain();
+          o.type = type; o.frequency.value = f;
+          g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.001, t + step + 0.18);
+          o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + step + 0.2);
+        });
+      } catch (e) { /* 무시 */ }
+    },
+    capture(k) { const n = Math.min(k, 5); for (let i = 0; i < n; i++) setTimeout(() => this.stone(0.45), i * 70); },
+    pass() { this.tone([660, 520], 0.11, 'sine', 0.12); },
+    win() { this.tone([523, 659, 784, 1047], 0.12); },
+    lose() { this.tone([440, 392, 330], 0.16, 'sine', 0.14); }
+  };
+
+  // ---- 병렬 탐색 (Web Worker) ----
+  const WORKER_MAIN = `
+let cur = 0;
+self.onmessage = async (e) => {
+  const m = e.data;
+  if (m.cmd === 'stop') { if (m.id === cur) cur = -1; return; }
+  if (m.cmd === 'search') {
+    const my = m.id; cur = my;
+    try {
+      const b = Board.fromState(m.state);
+      const r = await mcts(b, { timeMs: m.timeMs, maxSims: m.maxSims, komi: m.komi, cancel: () => cur !== my });
+      self.postMessage({ id: my, sims: r.sims, kids: r.kids, own: r.own }, [r.own.buffer]);
+    } catch (err) { self.postMessage({ id: my, error: String(err) }); }
+  }
+};`;
+  const Pool = {
+    workers: [], state: 'idle', seq: 0, pending: new Map(),
+    init() {
+      if (this.state !== 'idle') return;
+      try {
+        if (typeof Worker === 'undefined') throw new Error('no worker');
+        const src = document.getElementById('engine-src').textContent + '\n' + WORKER_MAIN;
+        const url = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
+        const n = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1));
+        for (let i = 0; i < n; i++) {
+          const w = new Worker(url);
+          w.onmessage = (e) => this.onMsg(e.data);
+          w.onerror = (e) => { if (e && e.preventDefault) e.preventDefault(); this.fail(); };
+          this.workers.push(w);
+        }
+        this.state = 'ready';
+      } catch (e) { this.state = 'failed'; this.workers = []; }
+    },
+    fail() {
+      if (this.state === 'failed') return;
+      this.state = 'failed';
+      this.workers.forEach((w) => { try { w.terminate(); } catch (e) { /* 무시 */ } });
+      this.workers = [];
+      for (const job of [...this.pending.values()]) this.finishJob(job, true);
+    },
+    onMsg(m) {
+      const job = this.pending.get(m.id); if (!job) return;
+      if (m.error) { this.fail(); return; }
+      job.results.push(m);
+      if (job.results.length === job.n) this.finishJob(job, false);
+    },
+    finishJob(job, fallback) {
+      this.pending.delete(job.id); clearInterval(job.poll); clearTimeout(job.safety);
+      if (fallback) localSearch(job.board, job.opts).then(job.resolve);
+      else job.resolve(finalizeSearch(job.results, job.board.len));
+    },
+    search(board, opts) {
+      this.init();
+      if (this.state !== 'ready') return localSearch(board, opts);
+      const id = ++this.seq, n = this.workers.length, state = board.toState();
+      return new Promise((resolve) => {
+        const job = { id, n, board, opts, results: [], resolve };
+        job.poll = setInterval(() => {
+          if (opts.cancel && opts.cancel()) {
+            this.workers.forEach((w) => w.postMessage({ cmd: 'stop', id }));
+            this.pending.delete(id); clearInterval(job.poll); clearTimeout(job.safety);
+            resolve({ move: PASS, winrate: 0.5, sims: 0, own: null, top: [] });
+          }
+        }, 80);
+        job.safety = setTimeout(() => { if (this.pending.has(id)) this.fail(); }, opts.timeMs + 15000);
+        this.pending.set(id, job);
+        for (const w of this.workers) w.postMessage({ cmd: 'search', id, state, timeMs: opts.timeMs, maxSims: Math.ceil((opts.maxSims || 1e9) / n), komi: opts.komi });
+      });
+    }
+  };
+  const poolSearch = (b, o) => Pool.search(b, o);
+
+  // ---- 프로 AI 신경망 (WebAssembly, 워커 여러 개) ----
+  // 가중치(float16)는 데이터 세그먼트만 가진 WebAssembly 모듈에 담겨 있다
+  const MODEL_URL = 'nn/kata-b10c128.wasm', MODEL_FILE_BYTES = 5992178, MODEL_BYTES = 5992142;
+  const PRO = { time: { 9: 3000, 13: 4000, 19: 5000 }, visits: { 9: 1600, 13: 1200, 19: 900 } };
+  const NN_WORKER_MAIN = `
+let nn = null;
+self.onmessage = async (e) => {
+  const m = e.data;
+  if (m.cmd === 'init') {
+    try { nn = await KataNN.create(m.wasm, m.meta, new Uint16Array(m.weights), 1, 19); self.postMessage({ cmd: 'ready' }); }
+    catch (err) { self.postMessage({ cmd: 'error', msg: String((err && err.message) || err) }); }
+  } else if (m.cmd === 'eval') {
+    try {
+      const io = nn.io(); io.inp.set(m.inp); io.glob.set(m.glob); nn.run(1, m.n);
+      const out = io.out.slice(0, 2 * m.n * m.n + 8);
+      self.postMessage({ cmd: 'res', out }, [out.buffer]);
+    } catch (err) { self.postMessage({ cmd: 'error', msg: String((err && err.message) || err) }); }
+  }
+};`;
+  const NNPool = {
+    state: 'idle', progress: 0, error: '', workers: [], idle: [], queue: [], subs: new Set(), loading: null,
+    on(fn) { this.subs.add(fn); return () => this.subs.delete(fn); },
+    emit() { this.subs.forEach((f) => { try { f(this); } catch (e) { /* 무시 */ } }); },
+    load() {
+      if (this.state === 'ready' || this.state === 'loading') return this.loading || Promise.resolve();
+      this.state = 'loading'; this.progress = 0; this.error = ''; this.emit();
+      this.loading = (async () => {
+        try {
+          if (typeof WebAssembly === 'undefined' || typeof Worker === 'undefined') throw new Error('이 브라우저는 WebAssembly 워커를 지원하지 않아요');
+          const wasm = Uint8Array.from(atob(NN_WASM_B64), (ch) => ch.charCodeAt(0));
+          if (!WebAssembly.validate(wasm)) throw new Error('이 브라우저는 WebAssembly SIMD를 지원하지 않아요');
+          const res = await fetch(MODEL_URL);
+          if (!res.ok) throw new Error('신경망 파일을 받지 못했어요 (' + res.status + ')');
+          const total = MODEL_FILE_BYTES;
+          let buf;
+          if (res.body && res.body.getReader) {
+            const reader = res.body.getReader(), parts = []; let got = 0;
+            for (;;) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              parts.push(value); got += value.length;
+              this.progress = Math.min(0.9, (got / total) * 0.9); this.emit();
+            }
+            buf = new Uint8Array(got); let o = 0; for (const pt of parts) { buf.set(pt, o); o += pt.length; }
+          } else buf = new Uint8Array(await res.arrayBuffer());
+          if (buf.length !== MODEL_FILE_BYTES) throw new Error('신경망 파일 크기가 맞지 않아요');
+          const holder = await WebAssembly.instantiate(buf, {});
+          buf = new Uint8Array(holder.instance.exports.mem.buffer, 0, MODEL_BYTES).slice();
+          const src = document.getElementById('nn-src').textContent + '\n' + NN_WORKER_MAIN;
+          const url = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
+          const count = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1));
+          const inits = [];
+          for (let i = 0; i < count; i++) {
+            const w = new Worker(url);
+            this.workers.push(w);
+            inits.push(new Promise((resolve, reject) => {
+              const t = setTimeout(() => reject(new Error('신경망 준비 시간이 너무 오래 걸려요')), 60000);
+              w.onmessage = (e) => {
+                if (e.data.cmd === 'ready') { clearTimeout(t); w.onmessage = (ev) => this.onMsg(w, ev.data); resolve(); }
+                else if (e.data.cmd === 'error') { clearTimeout(t); reject(new Error(e.data.msg)); }
+              };
+              w.onerror = (e) => { if (e && e.preventDefault) e.preventDefault(); clearTimeout(t); reject(new Error('워커 오류')); };
+            }));
+            w.postMessage({ cmd: 'init', wasm: wasm.buffer.slice(0), meta: NN_META, weights: buf.buffer.slice(0) });
+          }
+          await Promise.all(inits);
+          this.idle = this.workers.slice();
+          this.workers.forEach((w) => { w.onerror = (e) => { if (e && e.preventDefault) e.preventDefault(); this.fail('워커 오류'); }; });
+          ProAI.setEvaluator((inp, glob, n) => this.eval(inp, glob, n), count * 2);
+          this.state = 'ready'; this.progress = 1;
+        } catch (e) {
+          this.fail(String((e && e.message) || e));
+        }
+        this.emit();
+      })();
+      return this.loading;
+    },
+    fail(msg) {
+      this.state = 'failed'; this.error = msg;
+      this.workers.forEach((w) => { try { w.terminate(); } catch (e) { /* 무시 */ } });
+      this.workers = []; this.idle = [];
+      const q = this.queue; this.queue = [];
+      q.forEach((j) => j.reject(new Error(msg)));
+      this.emit();
+    },
+    eval(inp, glob, n) {
+      return new Promise((resolve, reject) => {
+        if (this.state !== 'ready') { reject(new Error('신경망이 준비되지 않았어요')); return; }
+        const job = { inp, glob, n, resolve, reject };
+        const w = this.idle.pop();
+        if (w) this.run(w, job); else this.queue.push(job);
+      });
+    },
+    run(w, job) { w._job = job; w.postMessage({ cmd: 'eval', inp: job.inp, glob: job.glob, n: job.n }, [job.inp.buffer, job.glob.buffer]); },
+    onMsg(w, m) {
+      const job = w._job; w._job = null;
+      if (m.cmd === 'res') { if (job) job.resolve(m.out); }
+      else { if (job) job.reject(new Error(m.msg)); this.fail(m.msg || '신경망 오류'); return; }
+      const next = this.queue.shift();
+      if (next) this.run(w, next); else this.idle.push(w);
+    }
+  };
+  NNPool.on(() => { try { updateHUD(); updateProNote(); } catch (e) { /* 초기화 전 */ } });
+  window.__baduk = { Pool, NNPool, get lastSims() { return G.lastSims; }, get winrate() { return G.aiWinrate; } };
+
+  // ---- 상태 ----
+  const G = {
+    size: 9, level: 1, user: BLACK, ai: WHITE, board: new Board(9), moves: [],
+    phase: 'setup', busy: false, thinking: false, hinting: false, token: 0,
+    dead: null, score: null, hint: -1, pending: -1, hover: -1, cursor: -1, hints: 0, result: null, lastSims: 0,
+    aiWinrate: null, proLow: 0
+  };
+  const prefs = Object.assign({ size: 9, level: 1, color: 'black', sound: true }, store.get(PREF_KEY) || {});
+  let stats = store.get(STATS_KEY) || {};
+  Sound.on = prefs.sound !== false;
+
+  const el = {
+    svg: $('#svg'), board: $('#board'), gGrid: $('#gGrid'), gStones: $('#gStones'), gTerr: $('#gTerr'), gFx: $('#gFx'), gMarks: $('#gMarks'),
+    oppBar: $('#oppBar'), meBar: $('#meBar'), oppAvatar: $('#oppAvatar'), oppName: $('#oppName'), oppLv: $('#oppLv'), oppBubble: $('#oppBubble'),
+    oppCaps: $('#oppCaps'), meCaps: $('#meCaps'), oppCapStone: $('#oppCapStone'), meCapStone: $('#meCapStone'), meStone: $('#meStone'), meSub: $('#meSub'),
+    status: $('#status'), meta: $('#meta'), scorecard: $('#scorecard'), tip: $('#tip'),
+    actPlay: $('#actPlay'), actScore: $('#actScore'), actOver: $('#actOver'),
+    btnUndo: $('#btnUndo'), btnHint: $('#btnHint'), btnPass: $('#btnPass'), btnResign: $('#btnResign'), btnSound: $('#btnSound')
+  };
+
+  const ICON_SOUND_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
+  const ICON_SOUND_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
+  function renderSoundBtn() {
+    el.btnSound.innerHTML = Sound.on ? ICON_SOUND_ON : ICON_SOUND_OFF;
+    el.btnSound.setAttribute('aria-label', Sound.on ? '소리 끄기' : '소리 켜기');
+  }
+
+  // ---- 말풍선 / 토스트 ----
+  function say(text) {
+    el.oppBubble.textContent = text;
+    el.oppBubble.classList.remove('fresh'); void el.oppBubble.offsetWidth; el.oppBubble.classList.add('fresh');
+  }
+  function sayThinking() { el.oppBubble.innerHTML = '<span class="dots" aria-label="생각 중"><i></i><i></i><i></i></span>'; }
+  let toastTimer = 0;
+  function toast(msg) {
+    const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2300);
+  }
+
+  // ---- 판 그리기 ----
+  const vbSize = () => (G.size - 1) * CS + 2 * CM;
+  const px = (p) => CM + G.board.xOf(p) * CS;
+  const py = (p) => CM + G.board.yOf(p) * CS;
+  function setupGrid() {
+    const n = G.size, V = vbSize(), end = CM + (n - 1) * CS;
+    el.svg.setAttribute('viewBox', `0 0 ${V} ${V}`);
+    let h = '';
+    for (let i = 0; i < n; i++) {
+      const c = CM + i * CS, e = i === 0 || i === n - 1 ? ' edge' : '';
+      h += `<line class="gl${e}" x1="${CM}" y1="${c}" x2="${end}" y2="${c}"/><line class="gl${e}" x1="${c}" y1="${CM}" x2="${c}" y2="${end}"/>`;
+    }
+    const hs = n === 9 ? [[2, 2], [6, 2], [2, 6], [6, 6], [4, 4]]
+      : n === 13 ? [[3, 3], [9, 3], [3, 9], [9, 9], [6, 6]]
+      : [3, 9, 15].flatMap((a) => [3, 9, 15].map((b) => [a, b]));
+    for (const [x, y] of hs) h += `<circle class="hoshi" cx="${CM + x * CS}" cy="${CM + y * CS}" r="${n === 19 ? 12 : 10}"/>`;
+    el.gGrid.innerHTML = h;
+    el.gFx.innerHTML = '';
+  }
+  function stoneEl(x, y, v, cls, dead) {
+    return `<g transform="translate(${x} ${y})"${dead ? ' class="dead"' : ''}><g${cls ? ` class="${cls}"` : ''}><circle class="sh" cx="5" cy="7" r="46"/><circle r="46" fill="url(#${v === BLACK ? 'gB' : 'gW'})"${v === WHITE ? ' class="wst"' : ''}/></g></g>`;
+  }
+  function renderStones(newP) {
+    const b = G.board, n = G.size, showDead = G.phase !== 'play' && G.dead;
+    let h = '';
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+      const p = b.pt(x, y), v = b.c[p];
+      if (v !== BLACK && v !== WHITE) continue;
+      h += stoneEl(CM + x * CS, CM + y * CS, v, p === newP ? 'drop' : '', showDead && G.dead[p]);
+    }
+    el.gStones.innerHTML = h;
+  }
+  function renderTerr() {
+    let h = '';
+    if (G.phase !== 'play' && G.score) {
+      const b = G.board, t = G.score.terr;
+      for (let i = 0; i < b.len; i++) {
+        if (!t[i]) continue;
+        const x = CM + b.xOf(i) * CS, y = CM + b.yOf(i) * CS;
+        h += `<rect class="${t[i] === BLACK ? 'terr-b' : 'terr-w'}" x="${x - 15}" y="${y - 15}" width="30" height="30" rx="4"/>`;
+      }
+    }
+    el.gTerr.innerHTML = h;
+  }
+  function renderMarks() {
+    const b = G.board; let h = '';
+    if (G.phase === 'play') {
+      if (b.last >= 0 && b.c[b.last]) h += `<circle class="lastmark" cx="${px(b.last)}" cy="${py(b.last)}" r="13"/>`;
+      if (G.hint >= 0) h += `<g transform="translate(${px(G.hint)} ${py(G.hint)})"><circle class="hintring" r="44"/></g>`;
+      const ghost = G.pending >= 0 ? G.pending : G.hover >= 0 ? G.hover : -1;
+      if (ghost >= 0 && userCanPlay() && b.c[ghost] === EMPTY) {
+        const x = px(ghost), y = py(ghost), end = CM + (G.size - 1) * CS;
+        if (G.pending >= 0) h += `<line class="cross" x1="${CM}" y1="${y}" x2="${end}" y2="${y}"/><line class="cross" x1="${x}" y1="${CM}" x2="${x}" y2="${end}"/>`;
+        h += `<g class="ghost" transform="translate(${x} ${y})"><circle r="46" fill="url(#${G.user === BLACK ? 'gB' : 'gW'})"/></g>`;
+      }
+    }
+    if (G.cursor >= 0 && document.activeElement === el.svg) {
+      h += `<rect class="cursor" x="${px(G.cursor) - 50}" y="${py(G.cursor) - 50}" width="100" height="100" rx="14"/>`;
+    }
+    el.gMarks.innerHTML = h;
+  }
+  function captureFx(list) {
+    if (!list.length) return;
+    let h = '';
+    for (const { p, v } of list) h += `<g transform="translate(${px(p)} ${py(p)})"><g class="pop"><circle r="46" fill="url(#${v === BLACK ? 'gB' : 'gW'})"/></g></g>`;
+    const g = document.createElementNS(NS, 'g'); g.innerHTML = h; el.gFx.appendChild(g);
+    setTimeout(() => g.remove(), 650);
+  }
+  function renderAll(newP = -1) {
+    renderStones(newP); renderTerr(); renderMarks(); updateHUD();
+  }
+
+  // ---- HUD ----
+  const userCanPlay = () => G.phase === 'play' && !G.busy && G.board.turn === G.user;
+  function renderPlayers() {
+    const ch = CHAR[G.level];
+    el.oppAvatar.innerHTML = avatarSVG(G.level, G.ai);
+    el.oppName.textContent = ch.name;
+    el.oppLv.textContent = `${ch.lv} · ${ch.title}`;
+    el.oppLv.className = `lvchip lv${G.level}`;
+    el.meStone.innerHTML = stoneIconSVG(G.user);
+    el.meSub.textContent = G.user === BLACK ? '흑 · 내가 먼저 둬요' : '백 · 덤 6.5를 받아요';
+    el.oppCapStone.className = `mini ${G.user === BLACK ? 'b' : 'w'}`;
+    el.meCapStone.className = `mini ${G.ai === BLACK ? 'b' : 'w'}`;
+  }
+  function updateHUD() {
+    const b = G.board, ch = CHAR[G.level], playing = G.phase === 'play';
+    el.oppBar.classList.toggle('active', playing && b.turn === G.ai);
+    el.meBar.classList.toggle('active', playing && b.turn === G.user);
+    el.oppCaps.textContent = b.caps[G.ai];
+    el.meCaps.textContent = b.caps[G.user];
+    el.board.classList.toggle('locked', G.busy);
+
+    // 상태 문구
+    let status = '', tip = '';
+    if (G.phase === 'setup') { status = '새 게임을 골라 주세요'; tip = '상대와 판 크기를 고르면 바로 시작해요.'; }
+    else if (G.phase === 'play') {
+      if (G.thinking) status = `${iga(ch.name)} 생각 중…`;
+      else if (G.hinting) status = '좋은 자리를 찾는 중…';
+      else if (b.turn === G.user) status = b.passes === 1 ? `${iga(ch.name)} 패스했어요` : '내 차례예요';
+      else status = `${ch.name} 차례`;
+      if (b.passes === 1 && b.turn === G.user) tip = '나도 패스하면 대국이 끝나고 계가해요. 더 둘 곳이 있으면 그냥 두세요.';
+      else if (G.pending >= 0) tip = '같은 자리를 한 번 더 탭하면 돌을 놓아요.';
+      else if (G.moves.length < 2) tip = '돌을 놓을 자리를 탭하세요. 상대 돌을 둘러싸면 따낼 수 있어요.';
+      else tip = '더 둘 곳이 없다 싶으면 패스하세요. 둘 다 패스하면 계가해요.';
+    } else if (G.phase === 'scoring') {
+      status = G.busy ? '계가하는 중…' : '계가';
+      tip = G.busy ? '살아 있는 돌과 죽은 돌을 가리고 있어요.' : '흐리게 보이는 돌은 죽은 돌이에요. 잘못 됐으면 돌을 탭해서 바꾸세요.';
+    } else if (G.phase === 'over' && G.result) {
+      status = G.result.winner === G.user ? '이겼어요!' : '졌어요';
+      tip = '판을 둘러보고 한 판 더 해 보세요.';
+    }
+    el.status.textContent = status;
+    el.tip.textContent = tip;
+    const readK = (x) => (x >= 10000 ? `${(x / 10000).toFixed(1)}만` : x.toLocaleString('ko-KR'));
+    el.meta.textContent = `${G.size}×${G.size} · 덤 6.5 · ${b.moveNum}수째${G.hints ? ` · 힌트 ${G.hints}번` : ''}` +
+      (G.phase === 'play' && G.level === 3 && G.lastSims ? ` · ${ch.name} 수읽기 ${G.lastSims.toLocaleString('ko-KR')}수${G.aiWinrate != null ? ` · 내 승률 예측 ${Math.round((1 - G.aiWinrate) * 100)}%` : ''}` :
+       G.phase === 'play' && G.level > 0 && G.lastSims ? ` · ${ch.name} 수읽기 ${readK(G.lastSims)}판` : '');
+
+    // 점수판
+    if ((G.phase === 'scoring' || G.phase === 'over') && G.score) {
+      const s = G.score, bl = s.diff > 0;
+      el.scorecard.hidden = false;
+      el.scorecard.innerHTML =
+        `<span class="mini b"></span><span>흑 · 돌 ${s.bS} + 집 ${s.bT}</span><span class="tot${bl ? ' lead' : ''}">${fmt(s.black)}</span>` +
+        `<span class="mini w"></span><span>백 · 돌 ${s.wS} + 집 ${s.wT} + 덤 ${s.komi}</span><span class="tot${bl ? '' : ' lead'}">${fmt(s.white)}</span>`;
+    } else el.scorecard.hidden = true;
+
+    // 버튼
+    el.actPlay.hidden = !(G.phase === 'play' || G.phase === 'setup');
+    el.actScore.hidden = G.phase !== 'scoring';
+    el.actOver.hidden = G.phase !== 'over';
+    const can = userCanPlay();
+    el.btnHint.disabled = !can;
+    el.btnPass.disabled = !can;
+    el.btnPass.classList.toggle('primary', can && b.passes === 1);
+    el.btnResign.disabled = G.phase !== 'play';
+    el.btnUndo.disabled = !(G.phase === 'play' && hasUserMove() && !G.hinting);
+    $('#btnResume').disabled = G.busy;
+    $('#btnFinish').disabled = G.busy || !G.score;
+    $('#btnShowResult').hidden = !G.result;
+  }
+  function hasUserMove() {
+    // 사용자가 둔 수가 하나라도 있는지 (패스 포함)
+    for (let i = 0; i < G.moves.length; i++) if ((i % 2 === 0 ? BLACK : WHITE) === G.user) return true;
+    return false;
+  }
+
+  // ---- 저장 ----
+  function snapshot() {
+    if (G.phase !== 'play' && G.phase !== 'scoring') return { phase: G.phase };
+    return { v: 1, size: G.size, level: G.level, user: G.user, moves: G.moves.slice(), phase: G.phase, hints: G.hints };
+  }
+  function save() {
+    const s = snapshot();
+    if (s.moves) store.set(STORE_KEY, s); else store.del(STORE_KEY);
+  }
+  if (window.claude && window.claude.hot && window.claude.hot.snapshot) {
+    try { window.claude.hot.snapshot(() => snapshot()); } catch (e) { /* 무시 */ }
+  }
+
+  // ---- 게임 흐름 ----
+  function rebuild() {
+    const b = new Board(G.size);
+    for (const m of G.moves) { if (m < 0) b.pass(); else b.play(m, b.turn); }
+    G.board = b;
+  }
+  function newGame(cfg) {
+    G.token++;
+    G.size = cfg.size; G.level = cfg.level;
+    G.user = cfg.color === 'random' ? (Math.random() < 0.5 ? BLACK : WHITE) : cfg.color === 'white' ? WHITE : BLACK;
+    G.ai = 3 - G.user;
+    G.moves = []; G.board = new Board(G.size); G.lastSims = 0; G.aiWinrate = null; G.proLow = 0;
+    ProAI.resetTree();
+    if (G.level === 3) NNPool.load();
+    Object.assign(G, { phase: 'play', busy: false, thinking: false, hinting: false, dead: null, score: null, hint: -1, pending: -1, hover: -1, cursor: -1, hints: 0, result: null });
+    setupGrid(); renderPlayers(); renderAll();
+    say(pick(CHAR[G.level].greet));
+    if (cfg.color === 'random') toast(G.user === BLACK ? '나는 흑이에요. 먼저 두세요!' : '나는 백이에요. 상대가 먼저 둬요.');
+    save();
+    if (G.board.turn === G.ai) aiTurn(false);
+  }
+
+  function applyMove(p, col) {
+    const b = G.board, before = b.c.slice();
+    const k = b.play(p, col);
+    G.moves.push(p); G.hint = -1; G.pending = -1;
+    const caps = [];
+    if (k) for (let i = 0; i < b.len; i++) if (before[i] === 3 - col && b.c[i] === EMPTY) caps.push({ p: i, v: 3 - col });
+    renderAll(p); captureFx(caps);
+    Sound.stone(); if (k) setTimeout(() => Sound.capture(k), 110);
+    return k;
+  }
+
+  function onBoardTap(p, ptype) {
+    if (p < 0) return;
+    if (G.phase === 'scoring') {
+      if (G.busy || !G.dead) return;
+      const v = G.board.c[p];
+      if (v !== BLACK && v !== WHITE) return;
+      const grp = G.board.groupStones(p), nv = G.dead[p] ? 0 : 1;
+      for (const s of grp) G.dead[s] = nv;
+      G.score = finalScore(G.board, G.dead, KOMI);
+      Sound.stone(0.5); renderAll(); save();
+      return;
+    }
+    if (G.phase !== 'play') return;
+    if (G.busy) { if (G.thinking) toast(`${iga(CHAR[G.level].name)} 생각 중이에요. 잠깐만요!`); return; }
+    if (G.board.turn !== G.user) return;
+    const code = G.board.legality(p, G.user);
+    if (code === 1) return;
+    if (code === 2) { toast('패예요. 방금 따낸 자리는 바로 되따낼 수 없어요. 다른 곳에 한 수 두고 오세요.'); return; }
+    if (code === 3) { toast('돌이 놓자마자 잡히는 자리라서 둘 수 없어요.'); return; }
+    const confirmTap = (ptype === 'touch' || ptype === 'pen') && G.size >= 13;
+    if (confirmTap && G.pending !== p) { G.pending = p; renderMarks(); updateHUD(); return; }
+    userMove(p);
+  }
+  function userMove(p) {
+    const k = applyMove(p, G.user);
+    if (k) say(pick(CHAR[G.level].capUser));
+    save();
+    aiTurn(false);
+  }
+  function userPass() {
+    if (!userCanPlay()) return;
+    const aiPassed = G.board.passes >= 1;
+    G.board.pass(); G.moves.push(PASS); G.hint = -1; G.pending = -1;
+    Sound.pass();
+    if (aiPassed) { startScoring(); return; }
+    toast('패스했어요');
+    renderAll(); save();
+    aiTurn(true);
+  }
+
+  let proFallbackNoted = false;
+  async function proDecide(userPassed, token) {
+    if (NNPool.state !== 'ready') {
+      const off = NNPool.on((pl) => {
+        if (token === G.token && pl.state === 'loading') el.oppBubble.textContent = `신경망 불러오는 중… ${Math.round(pl.progress * 100)}%`;
+      });
+      el.oppBubble.textContent = '신경망 불러오는 중…';
+      await NNPool.load(); off();
+      if (token !== G.token) return { cancelled: true };
+      sayThinking();
+    }
+    const fallback = () => {
+      if (!proFallbackNoted) { proFallbackNoted = true; toast(`프로 AI를 쓸 수 없어서 상 난이도로 둬요. (${NNPool.error || '오류'})`); }
+      return decideAI(G.board, 2, userPassed, () => token !== G.token, poolSearch);
+    };
+    if (NNPool.state !== 'ready') return fallback();
+    const n = G.size;
+    let r;
+    try { r = await ProAI.search(n, G.moves.slice(), { komi: KOMI, timeMs: PRO.time[n], maxVisits: PRO.visits[n], cancel: () => token !== G.token }); }
+    catch (e) { console.error(e); return fallback(); }
+    G.aiWinrate = r.winrate;
+    if (r.winrate < 0.03 && G.board.moveNum > n * n * 0.3) { if (++G.proLow >= 2) return { resign: true }; }
+    else G.proLow = 0;
+    return { move: r.move, sims: r.visits, winrate: r.winrate };
+  }
+
+  async function aiTurn(userPassed) {
+    const token = G.token, ch = CHAR[G.level];
+    G.busy = true; G.thinking = true; G.pending = -1;
+    sayThinking(); renderMarks(); updateHUD();
+    await sleep(40);
+    if (token !== G.token) return;
+    const t0 = performance.now();
+    let d;
+    try { d = G.level === 3 ? await proDecide(userPassed, token) : await decideAI(G.board, G.level, userPassed, () => token !== G.token, poolSearch); }
+    catch (e) { console.error(e); d = { move: PASS }; }
+    if (d.cancelled) return;
+    const wait = 520 - (performance.now() - t0);
+    if (wait > 0) await sleep(wait);
+    if (token !== G.token) return;
+    G.busy = false; G.thinking = false;
+    if (d.sims) G.lastSims = d.sims;
+    if (d.resign) {
+      say(pick(ch.resign));
+      finishGame({ winner: G.user, by: 'resign', resigner: G.ai });
+      return;
+    }
+    if (d.move === PASS || !G.board.isLegal(d.move, G.ai)) {
+      G.board.pass(); G.moves.push(PASS); Sound.pass();
+      say(pick(ch.pass));
+      if (G.board.passes >= 2) { startScoring(); return; }
+      renderAll(); save();
+      return;
+    }
+    const k = applyMove(d.move, G.ai);
+    if (k) say(pick(ch.capAI));
+    else if (userPassed) say(pick(ch.keepGoing));
+    else say(pick(ch.move));
+    save();
+  }
+
+  async function startScoring() {
+    const token = ++G.token;
+    G.phase = 'scoring'; G.busy = true; G.thinking = false; G.hinting = false; G.hint = -1; G.pending = -1;
+    G.dead = null; G.score = null;
+    renderAll();
+    const n = G.size;
+    let own = null;
+    if (NNPool.state === 'ready') { try { own = await ProAI.ownership(n, G.moves.slice(), KOMI); } catch (e) { own = null; } }
+    if (!own) own = await estimateOwnership(G.board, n === 9 ? 500 : n === 13 ? 350 : 250, 2500, () => token !== G.token);
+    if (token !== G.token) return;
+    G.dead = deadFromOwnership(G.board, own);
+    G.score = finalScore(G.board, G.dead, KOMI);
+    G.busy = false;
+    renderAll(); save();
+  }
+  function resumePlay() {
+    G.token++;
+    Object.assign(G, { phase: 'play', busy: false, dead: null, score: null });
+    G.board.passes = 0;
+    renderAll(); save();
+    say(pick(CHAR[G.level].keepGoing));
+    if (G.board.turn === G.ai) aiTurn(false);
+  }
+
+  function finishGame(res) {
+    G.token++;
+    Object.assign(G, { busy: false, thinking: false, hinting: false, phase: 'over', result: res, hint: -1, pending: -1 });
+    const key = LEVELS[G.level].key;
+    const rec = stats[key] || { w: 0, l: 0 };
+    if (res.winner === G.user) rec.w++; else rec.l++;
+    stats[key] = rec; store.set(STATS_KEY, stats);
+    store.del(STORE_KEY);
+    const ch = CHAR[G.level];
+    if (res.by === 'score') say(res.winner === G.user ? pick(ch.aiLose) : pick(ch.aiWin));
+    if (res.winner === G.user) Sound.win(); else Sound.lose();
+    renderAll();
+    setTimeout(openResult, res.by === 'resign' ? 450 : 200);
+  }
+
+  function openResult() {
+    const r = G.result; if (!r) return;
+    const ch = CHAR[G.level], won = r.winner === G.user;
+    $('#resAvatar').innerHTML = avatarSVG(G.level, G.ai);
+    const title = $('#resultTitle');
+    title.textContent = won ? '이겼어요!' : '아쉽게 졌어요';
+    title.classList.toggle('win', won);
+    let sub = '', body = '';
+    if (r.by === 'resign') {
+      sub = r.resigner === G.ai ? `${iga(ch.name)} 기권했어요 · ${colorName(G.user)} 불계승` : `내가 기권했어요 · ${colorName(G.ai)} 불계승`;
+    } else {
+      const s = G.score, m = Math.abs(s.diff);
+      sub = `${colorName(r.winner)} ${fmt(m)}집 승 · ${G.size}×${G.size}`;
+      const who = (c) => (c === G.user ? '나' : ch.name);
+      body = `<table class="rtable"><thead><tr><th></th><th>살아 있는 돌</th><th>집</th><th>덤</th><th>합계</th></tr></thead><tbody>` +
+        `<tr><td><span class="mini b"></span> 흑 (${who(BLACK)})</td><td>${s.bS}</td><td>${s.bT}</td><td>–</td><td class="sum">${fmt(s.black)}</td></tr>` +
+        `<tr><td><span class="mini w"></span> 백 (${who(WHITE)})</td><td>${s.wS}</td><td>${s.wT}</td><td>${s.komi}</td><td class="sum">${fmt(s.white)}</td></tr>` +
+        `</tbody></table>`;
+    }
+    const rec = stats[LEVELS[G.level].key] || { w: 0, l: 0 };
+    $('#resultSub').textContent = sub;
+    $('#resultBody').innerHTML = body + `<p class="result-sub" style="margin:10px 0 0">${ch.name} 상대 전적 ${rec.w}승 ${rec.l}패${G.hints ? ` · 이번 판 힌트 ${G.hints}번` : ''}</p>`;
+    const line = r.by === 'resign' && r.resigner === G.ai ? pick(ch.resign) : won ? pick(ch.aiLose) : pick(ch.aiWin);
+    $('#resultQuote').textContent = `${ch.name}: “${line}”`;
+    openScrim('resultScrim');
+  }
+
+  function undo() {
+    if (G.phase !== 'play' || !hasUserMove() || G.hinting) return;
+    G.token++;
+    G.busy = false; G.thinking = false;
+    while (G.moves.length) {
+      const col = (G.moves.length - 1) % 2 === 0 ? BLACK : WHITE;
+      G.moves.pop();
+      if (col === G.user) break;
+    }
+    rebuild();
+    G.hint = -1; G.pending = -1;
+    renderAll(); save();
+    say(pick(CHAR[G.level].undo));
+  }
+
+  async function showHint() {
+    if (!userCanPlay()) return;
+    const token = G.token;
+    G.busy = true; G.hinting = true; updateHUD();
+    let res;
+    if (NNPool.state === 'ready') {
+      try { res = await ProAI.search(G.size, G.moves.slice(), { komi: KOMI, timeMs: 1500, maxVisits: 300, cancel: () => token !== G.token }); }
+      catch (e) { res = null; }
+    }
+    if (!res) res = await Pool.search(G.board.clone(), { timeMs: 1200, maxSims: 8000, komi: KOMI, cancel: () => token !== G.token });
+    if (token !== G.token) return;
+    G.busy = false; G.hinting = false;
+    if (res.move === PASS) { toast('둘 만한 곳이 없어요. 패스해도 좋아요.'); updateHUD(); return; }
+    G.hint = res.move; G.hints++;
+    say(pick(CHAR[G.level].hint));
+    renderMarks(); updateHUD(); save();
+  }
+
+  // ---- 시트 ----
+  let lastFocus = null;
+  function openScrim(id) {
+    lastFocus = document.activeElement;
+    const s = $('#' + id); s.classList.add('open');
+    const sheet = s.querySelector('.sheet');
+    if (sheet) setTimeout(() => sheet.focus({ preventScroll: true }), 30);
+  }
+  function closeScrim(id) {
+    $('#' + id).classList.remove('open');
+    if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+  }
+  function aiColorForPref(c) { return c === 'white' ? BLACK : WHITE; }
+  function buildSetup() {
+    const list = $('#oppList'); let h = '';
+    const aiC = aiColorForPref(currentColorChoice());
+    CHAR.forEach((ch, i) => {
+      const rec = stats[LEVELS[i].key];
+      h += `<input class="sr" type="radio" name="opp" id="opp${i}" value="${i}"${i === prefs.level ? ' checked' : ''}>` +
+        `<label class="opp" for="opp${i}"><span class="avatar">${avatarSVG(i, aiC)}</span><span class="otext">` +
+        `<span class="oname">${ch.name}<span class="lvchip lv${i}">${ch.lv} · ${ch.title}</span></span>` +
+        `<span class="odesc">${ch.desc}</span>` +
+        `<span class="orec">${rec ? `전적 ${rec.w}승 ${rec.l}패` : '아직 대국 기록이 없어요'}</span>` +
+        (i === 3 ? `<span class="orec" id="proNote"></span><span class="nnbar" id="proBar" hidden><i></i></span>` : '') +
+        `</span></label>`;
+    });
+    list.innerHTML = h;
+    updateProNote();
+    const pr = document.getElementById('opp3');
+    if (pr) pr.addEventListener('change', () => { if (pr.checked) NNPool.load(); });
+  }
+  function updateProNote() {
+    const note = document.getElementById('proNote'), bar = document.getElementById('proBar');
+    if (!note) return;
+    const st = NNPool.state;
+    note.textContent = st === 'loading' ? `신경망 받는 중… ${Math.round(NNPool.progress * 100)}%`
+      : st === 'ready' ? `신경망 준비 완료 · 계산 일꾼 ${NNPool.workers.length}개`
+      : st === 'failed' ? `이 기기에서는 쓸 수 없어요: ${NNPool.error}`
+      : '처음 한 번 신경망(약 6MB)을 내려받아요.';
+    bar.hidden = st !== 'loading';
+    bar.firstChild.style.width = `${Math.round(NNPool.progress * 100)}%`;
+  }
+  function currentColorChoice() { const c = document.querySelector('input[name="color"]:checked'); return c ? c.value : prefs.color; }
+  function openSetup() {
+    const sz = document.getElementById('size' + prefs.size); if (sz) sz.checked = true;
+    const cl = document.getElementById(prefs.color === 'white' ? 'colW' : prefs.color === 'random' ? 'colR' : 'colB'); if (cl) cl.checked = true;
+    buildSetup();
+    $('#setupClose').hidden = !(G.phase === 'play' || G.phase === 'scoring' || G.phase === 'over');
+    $('#btnStart').textContent = G.phase === 'play' ? '이 판 접고 새로 시작' : '대국 시작';
+    openScrim('setupScrim');
+  }
+  function startFromSetup() {
+    const lv = +(document.querySelector('input[name="opp"]:checked') || { value: 1 }).value;
+    const size = +(document.querySelector('input[name="size"]:checked') || { value: 9 }).value;
+    const color = currentColorChoice();
+    Object.assign(prefs, { level: lv, size, color });
+    store.set(PREF_KEY, prefs);
+    closeScrim('setupScrim');
+    newGame({ size, level: lv, color });
+  }
+
+  // ---- 입력 ----
+  let lastPtr = 'mouse';
+  function evPoint(e) {
+    const r = el.svg.getBoundingClientRect(), V = vbSize();
+    const vx = ((e.clientX - r.left) / r.width) * V, vy = ((e.clientY - r.top) / r.height) * V;
+    const x = Math.round((vx - CM) / CS), y = Math.round((vy - CM) / CS);
+    if (x < 0 || y < 0 || x >= G.size || y >= G.size) return -1;
+    return G.board.pt(x, y);
+  }
+  el.svg.addEventListener('pointerdown', (e) => { lastPtr = e.pointerType || 'mouse'; Sound.ensure(); });
+  el.svg.addEventListener('click', (e) => { G.cursor = -1; onBoardTap(evPoint(e), lastPtr); });
+  el.svg.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const p = evPoint(e);
+    if (p !== G.hover) { G.hover = p; renderMarks(); }
+  });
+  el.svg.addEventListener('pointerleave', () => { if (G.hover >= 0) { G.hover = -1; renderMarks(); } });
+  el.svg.addEventListener('focus', () => { if (G.cursor < 0) G.cursor = G.board.pt((G.size - 1) >> 1, (G.size - 1) >> 1); });
+  el.svg.addEventListener('blur', () => renderMarks());
+  el.svg.addEventListener('keydown', (e) => {
+    const k = e.key; let dx = 0, dy = 0;
+    if (k === 'ArrowLeft') dx = -1; else if (k === 'ArrowRight') dx = 1; else if (k === 'ArrowUp') dy = -1; else if (k === 'ArrowDown') dy = 1;
+    if (G.cursor < 0) G.cursor = G.board.pt((G.size - 1) >> 1, (G.size - 1) >> 1);
+    if (dx || dy) {
+      e.preventDefault();
+      const x = Math.max(0, Math.min(G.size - 1, G.board.xOf(G.cursor) + dx)), y = Math.max(0, Math.min(G.size - 1, G.board.yOf(G.cursor) + dy));
+      G.cursor = G.board.pt(x, y); G.hover = G.cursor; renderMarks();
+    } else if (k === 'Enter' || k === ' ') {
+      e.preventDefault(); Sound.ensure(); onBoardTap(G.cursor, 'keyboard');
+    }
+  });
+  document.addEventListener('pointerdown', () => Sound.ensure(), { once: true });
+
+  el.btnUndo.addEventListener('click', undo);
+  el.btnHint.addEventListener('click', showHint);
+  el.btnPass.addEventListener('click', userPass);
+  el.btnResign.addEventListener('click', () => {
+    if (G.phase !== 'play') return;
+    $('#confirmText').textContent = `${CHAR[G.level].name} 상대 전적에 패배로 기록돼요.`;
+    openScrim('confirmScrim');
+  });
+  $('#confirmNo').addEventListener('click', () => closeScrim('confirmScrim'));
+  $('#confirmYes').addEventListener('click', () => {
+    closeScrim('confirmScrim');
+    if (G.phase !== 'play') return;
+    say(pick(CHAR[G.level].aiWin));
+    finishGame({ winner: G.ai, by: 'resign', resigner: G.user });
+  });
+  $('#btnNew').addEventListener('click', openSetup);
+  $('#setupClose').addEventListener('click', () => closeScrim('setupScrim'));
+  $('#btnStart').addEventListener('click', startFromSetup);
+  document.querySelectorAll('input[name="color"]').forEach((r) => r.addEventListener('change', buildSetupKeepSel));
+  function buildSetupKeepSel() {
+    const cur = document.querySelector('input[name="opp"]:checked');
+    const keep = cur ? +cur.value : prefs.level; const old = prefs.level; prefs.level = keep; buildSetup(); prefs.level = old;
+  }
+  $('#btnResume').addEventListener('click', resumePlay);
+  $('#btnFinish').addEventListener('click', () => {
+    if (!G.score) return;
+    finishGame({ winner: G.score.diff > 0 ? BLACK : WHITE, by: 'score' });
+  });
+  $('#btnAgain').addEventListener('click', () => newGame({ size: prefs.size, level: prefs.level, color: prefs.color }));
+  $('#btnShowResult').addEventListener('click', openResult);
+  $('#resultClose').addEventListener('click', () => closeScrim('resultScrim'));
+  $('#resAgain').addEventListener('click', () => { closeScrim('resultScrim'); newGame({ size: prefs.size, level: prefs.level, color: prefs.color }); });
+  $('#resSetup').addEventListener('click', () => { closeScrim('resultScrim'); openSetup(); });
+  el.btnSound.addEventListener('click', () => {
+    Sound.on = !Sound.on; prefs.sound = Sound.on; store.set(PREF_KEY, prefs);
+    renderSoundBtn(); if (Sound.on) { Sound.ensure(); Sound.stone(0.6); }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if ($('#confirmScrim').classList.contains('open')) closeScrim('confirmScrim');
+    else if ($('#resultScrim').classList.contains('open')) closeScrim('resultScrim');
+    else if ($('#setupScrim').classList.contains('open') && !$('#setupClose').hidden) closeScrim('setupScrim');
+  });
+  document.querySelectorAll('.scrim').forEach((s) => s.addEventListener('click', (e) => {
+    if (e.target !== s) return;
+    if (s.id === 'setupScrim' && $('#setupClose').hidden) return;
+    closeScrim(s.id);
+  }));
+
+  // ---- 시작 ----
+  function restore(s) {
+    if (!s || ![9, 13, 19].includes(s.size) || ![0, 1, 2, 3].includes(s.level) || ![BLACK, WHITE].includes(s.user) || !Array.isArray(s.moves)) return false;
+    G.size = s.size; G.level = s.level; G.user = s.user; G.ai = 3 - s.user; G.hints = s.hints || 0;
+    G.moves = s.moves.filter((m) => Number.isInteger(m));
+    rebuild();
+    ProAI.resetTree();
+    if (G.level === 3) NNPool.load();
+    G.phase = 'play';
+    setupGrid(); renderPlayers(); renderAll();
+    say('이어서 둬요!');
+    if (s.phase === 'scoring') startScoring();
+    else if (G.board.turn === G.ai) aiTurn(G.moves.length > 0 && G.moves[G.moves.length - 1] === PASS);
+    return true;
+  }
+  function start(data) {
+    renderSoundBtn();
+    Pool.init();
+    const saved = data && data.moves ? data : store.get(STORE_KEY);
+    let ok = false;
+    if (saved && (saved.phase === 'play' || saved.phase === 'scoring')) {
+      try { ok = restore(saved); } catch (e) { console.error(e); ok = false; }
+    }
+    if (!ok) {
+      G.size = prefs.size; G.level = prefs.level; G.user = prefs.color === 'white' ? WHITE : BLACK; G.ai = 3 - G.user;
+      G.board = new Board(G.size); G.phase = 'setup';
+      setupGrid(); renderPlayers(); renderAll();
+      say(pick(CHAR[G.level].greet));
+      openSetup();
+    }
+  }
+  const hot = window.claude && window.claude.hot;
+  if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+})();
+</script>
+</body>
+</html>
