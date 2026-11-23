@@ -4,6 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Baduk Buddies</title>
+<meta name="description" content="콩이, 몽이, 돌왕, 청룡과 두는 캐주얼 바둑·장기. 설치 없이 브라우저에서 바로, 입문부터 신경망 프로 AI까지.">
+<meta name="theme-color" content="#e6eaf3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10162b" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Baduk Buddies · 캐주얼 바둑·장기">
+<meta property="og:description" content="콩이, 몽이, 돌왕, 청룡과 두는 바둑과 장기. 입문부터 신경망 프로 AI까지, 브라우저에서 바로.">
+<meta property="og:url" content="https://kosj.github.io/baduk-buddies/">
+<meta property="og:image" content="https://kosj.github.io/baduk-buddies/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22b%22%20cx%3D%2235%25%22%20cy%3D%2230%25%22%20r%3D%2275%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%237a8197%22/%3E%3Cstop%20offset%3D%22.45%22%20stop-color%3D%22%23262a35%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23090a0e%22/%3E%3C/radialGradient%3E%3CradialGradient%20id%3D%22w%22%20cx%3D%2235%25%22%20cy%3D%2230%25%22%20r%3D%2280%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23fff%22/%3E%3Cstop%20offset%3D%22.6%22%20stop-color%3D%22%23efebe2%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23c6c0b2%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle%20cx%3D%2240%22%20cy%3D%2237%22%20r%3D%2220%22%20fill%3D%22url%28%23w%29%22%20stroke%3D%22%2300000033%22/%3E%3Ccircle%20cx%3D%2224%22%20cy%3D%2226%22%20r%3D%2220%22%20fill%3D%22url%28%23b%29%22/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Baduk Buddies">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&family=Jua&display=swap" rel="stylesheet">
@@ -25,6 +40,7 @@
   --good: #157f55;
   --bad: #c43d47;
   --mark: #ff5a3c;
+  --dot: rgba(43, 82, 220, .09);
   --wood-1: #f2cd8c;
   --wood-2: #dfac62;
   --wood-3: #cc9445;
@@ -38,14 +54,14 @@
   :root:not([data-theme="light"]) {
     --bg: #10162b; --surface: #1a2240; --ink: #e9edf8; --muted: #9aa4c2; --line: #2c3659;
     --accent: #8aa4ff; --accent-deep: #5674e0; --accent-ink: #0d1430; --accent-soft: #263366;
-    --bubble: #222b4d; --btn-edge: #0b1024; --good: #4cc38f; --bad: #ff7d86;
+    --bubble: #222b4d; --btn-edge: #0b1024; --good: #4cc38f; --bad: #ff7d86; --dot: rgba(138, 164, 255, .08);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #10162b; --surface: #1a2240; --ink: #e9edf8; --muted: #9aa4c2; --line: #2c3659;
   --accent: #8aa4ff; --accent-deep: #5674e0; --accent-ink: #0d1430; --accent-soft: #263366;
-  --bubble: #222b4d; --btn-edge: #0b1024; --good: #4cc38f; --bad: #ff7d86;
+  --bubble: #222b4d; --btn-edge: #0b1024; --good: #4cc38f; --bad: #ff7d86; --dot: rgba(138, 164, 255, .08);
   color-scheme: dark;
 }
 
@@ -333,6 +349,143 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
 .seg2 { grid-template-columns: repeat(2, 1fr); }
 .seg4 label b { font-size: 15px; }
 
+
+/* ---- 한글 줄바꿈, 숨김 ---- */
+body { word-break: keep-all; overflow-wrap: break-word; }
+.btn[hidden], .icon-btn[hidden] { display: none; }
+@media (max-width: 480px) {
+  .top { gap: 8px; }
+  .top-actions { gap: 6px; }
+  .top-actions .icon-btn { width: 40px; height: 40px; }
+  #btnNew { width: 44px; padding: 0; font-size: 0; gap: 0; }
+  #btnNew svg { width: 22px; height: 22px; }
+}
+
+/* ---- 배경 무늬: 바둑판 교차점처럼 옅은 점 ---- */
+body {
+  background-color: var(--bg);
+  background-image: radial-gradient(circle at 1px 1px, var(--dot) 1.2px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* ---- 연출 ---- */
+.fx-fly { position: fixed; z-index: 70; pointer-events: none; will-change: transform; }
+.fx-fly svg, .fx-fly .fx-stone { width: 100%; height: 100%; display: block; }
+.fx-stone { border-radius: 50%; box-shadow: 0 4px 8px rgba(0, 0, 0, .3); }
+.fx-stone.b { background: radial-gradient(circle at 35% 30%, #757c92, #23262f 45%, #08090d 100%); }
+.fx-stone.w { background: radial-gradient(circle at 35% 30%, #fff, #f0ede5 58%, #c7c1b3 100%); }
+.fx-bump { animation: fxbump .45s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes fxbump { 0% { transform: scale(1); } 35% { transform: scale(1.28); } 100% { transform: scale(1); } }
+.fx-float {
+  position: fixed; z-index: 71; pointer-events: none; transform: translate(-50%, -50%);
+  font-family: var(--font-display); font-size: 22px; color: var(--good); text-shadow: 0 2px 0 var(--surface), 0 0 6px var(--surface);
+  animation: fxfloat 1.05s ease-out forwards;
+}
+.fx-float.bad { color: var(--bad); }
+@keyframes fxfloat { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.7); } 20% { opacity: 1; transform: translate(-50%, -70%) scale(1.1); } 100% { opacity: 0; transform: translate(-50%, -190%) scale(1); } }
+.fx-stamp {
+  position: absolute; left: 50%; top: 46%; z-index: 6; pointer-events: none; white-space: nowrap;
+  font-family: var(--font-display); font-size: clamp(38px, 11vw, 78px); line-height: 1; color: #fff;
+  padding: .16em .5em .12em; border-radius: .28em; border: 4px solid rgba(255, 255, 255, .85);
+  background: var(--accent); box-shadow: 0 7px 0 var(--accent-deep), 0 18px 40px rgba(10, 16, 40, .35);
+  transform: translate(-50%, -50%) rotate(-7deg); animation: fxstamp 1.45s cubic-bezier(.2, .9, .3, 1) forwards;
+}
+.fx-stamp.cho { background: #13784b; box-shadow: 0 7px 0 #0a4a2e, 0 18px 40px rgba(10, 16, 40, .35); }
+.fx-stamp.han { background: #c9303a; box-shadow: 0 7px 0 #7d1820, 0 18px 40px rgba(10, 16, 40, .35); }
+.fx-stamp.gold { background: #f1a91b; color: #3d2600; box-shadow: 0 7px 0 #a86f00, 0 18px 40px rgba(10, 16, 40, .35); }
+.fx-stamp.small { font-size: clamp(28px, 7vw, 46px); }
+@keyframes fxstamp {
+  0% { opacity: 0; transform: translate(-50%, -50%) rotate(-7deg) scale(2.3); }
+  13% { opacity: 1; transform: translate(-50%, -50%) rotate(-7deg) scale(.9); }
+  21% { transform: translate(-50%, -50%) rotate(-7deg) scale(1.05); }
+  28%, 78% { opacity: 1; transform: translate(-50%, -50%) rotate(-7deg) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -62%) rotate(-7deg) scale(1); }
+}
+.fx-ripple { fill: none; stroke: rgba(255, 255, 255, .9); stroke-width: 3; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; animation: fxripple .6s ease-out forwards; }
+@keyframes fxripple { 0% { opacity: .9; transform: scale(.9); } 100% { opacity: 0; transform: scale(1.9); } }
+.fx-confetti { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 90; pointer-events: none; }
+.fx-enter { animation: fxenter .32s ease-out; }
+@keyframes fxenter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* 캐릭터 반응 */
+.avatar svg { transform-origin: 50% 92%; }
+.avatar.r-think svg { animation: rthink 1.6s ease-in-out infinite; }
+.avatar.r-happy svg { animation: rhappy .8s cubic-bezier(.3, 1.4, .5, 1); }
+.avatar.r-cheer svg { animation: rhappy .8s cubic-bezier(.3, 1.4, .5, 1) 3; }
+.avatar.r-sad svg { animation: rsad .8s ease-in-out; }
+@keyframes rthink { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg) translateY(-2px); } }
+@keyframes rhappy { 0% { transform: none; } 30% { transform: translateY(-22%) scale(1.06, .96); } 55% { transform: translateY(0) scale(1.08, .9); } 75% { transform: translateY(-6%); } 100% { transform: none; } }
+@keyframes rsad { 0%, 100% { transform: none; } 15% { transform: translateX(-7%) rotate(-8deg); } 35% { transform: translateX(6%) rotate(6deg); } 55% { transform: translateX(-4%) rotate(-4deg); } 75% { transform: translateY(4%) scale(1, .95); } }
+
+/* ---- 헤더 ---- */
+.brand { text-decoration: none; color: inherit; border-radius: 12px; }
+.brand:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+body[data-view="home"] .gametabs, body[data-view="home"] #btnNew { display: none; }
+.icon-btn.help { font-family: var(--font-display); font-size: 22px; }
+
+/* ---- 홈 ---- */
+.home { display: flex; flex-direction: column; gap: 18px; align-items: center; padding-top: 4px; }
+.home[hidden] { display: none; }
+.hero { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; width: 100%; }
+.cast { display: flex; justify-content: center; gap: clamp(6px, 3vw, 22px); flex-wrap: nowrap; margin-top: 6px; }
+.cast button { background: none; border: 0; padding: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; position: relative; color: var(--ink); }
+.cast .avatar { width: clamp(58px, 17vw, 84px); height: clamp(58px, 17vw, 84px); }
+.cast .avatar svg { animation: bob 2.6s ease-in-out infinite; }
+.cast button:nth-child(2) .avatar svg { animation-delay: -.6s; }
+.cast button:nth-child(3) .avatar svg { animation-delay: -1.2s; }
+.cast button:nth-child(4) .avatar svg { animation-delay: -1.8s; }
+.cast .avatar.r-happy svg { animation: rhappy .8s cubic-bezier(.3, 1.4, .5, 1); }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5%); } }
+.cast .nm { font-family: var(--font-display); font-size: 15px; }
+.cast .lv { font-size: 11px; color: var(--muted); }
+.cast .say {
+  position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); white-space: nowrap;
+  background: var(--bubble); color: var(--ink); font-size: 13px; padding: 5px 10px; border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(10, 16, 40, .15); animation: fxenter .25s ease-out; pointer-events: none;
+}
+.hero-title { font-family: var(--font-display); font-size: clamp(28px, 8vw, 44px); line-height: 1.1; margin-top: 6px; }
+.hero-sub { margin: 0; color: var(--muted); max-width: 34ch; }
+.gamecards { display: grid; grid-template-columns: 1fr; gap: 14px; width: min(100%, 880px); }
+@media (min-width: 720px) { .gamecards { grid-template-columns: 1fr 1fr; } }
+.gcard {
+  display: grid; grid-template-columns: 112px 1fr; gap: 14px; align-items: center; padding: 14px; border-radius: 22px;
+  background: var(--surface); border: 2px solid var(--line); box-shadow: 0 6px 0 var(--line);
+}
+@media (min-width: 720px) { .gcard { grid-template-columns: 1fr; padding: 18px; } .gcard-art { max-width: 220px; margin: 0 auto; } }
+.gcard-art svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 6px 0 var(--wood-edge)); }
+.gcard h3 { font-family: var(--font-display); font-size: 26px; line-height: 1.1; }
+.gcard p { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+.gcard .rec { font-size: 13px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.gcard .prog { font-size: 13px; color: var(--accent); font-weight: 600; }
+.gcard-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.gcard-actions .btn { min-height: 44px; font-size: 16px; }
+.home .credit { text-align: center; max-width: 60ch; }
+
+/* ---- 게임 방법 ---- */
+.help-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.help-body { display: flex; flex-direction: column; gap: 14px; }
+.hsec { display: grid; grid-template-columns: 92px 1fr; gap: 12px; align-items: center; }
+.hsec svg { width: 92px; height: auto; display: block; border-radius: 8px; }
+.hsec h3 { font-family: var(--font-display); font-size: 18px; margin-bottom: 2px; }
+.hsec p { margin: 0; font-size: 14px; color: var(--muted); }
+.pgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 520px) { .pgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.pcell { display: flex; flex-direction: column; gap: 4px; padding: 8px; border-radius: 14px; border: 2px solid var(--line); }
+.pcell svg { width: 100%; height: auto; display: block; border-radius: 6px; }
+.pcell b { font-family: var(--font-display); font-weight: 400; font-size: 16px; }
+.pcell span { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.mini-dot { fill: var(--accent); }
+.mini-x { stroke: #e0483c; stroke-width: 3; }
+
+/* ---- 기물·돌 다듬기 ---- */
+.jp-hi { fill: rgba(255, 255, 255, .55); }
+.jp:hover .jp-in { transform: translateY(-3%); }
+.jp.deal .jp-in { animation: deal .42s cubic-bezier(.2, .9, .3, 1.2) both; }
+@keyframes deal { from { opacity: 0; transform: translateY(-40%) scale(1.25); } to { opacity: 1; transform: none; } }
+.board.fx-enter { animation: boardin .45s cubic-bezier(.2, .9, .3, 1.15); }
+@keyframes boardin { from { opacity: 0; transform: scale(.94) translateY(8px); } to { opacity: 1; transform: none; } }
+.lid-dish { transform-origin: center; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
@@ -341,7 +494,7 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand">
+    <a class="brand" href="#home" aria-label="Baduk Buddies 홈으로">
       <svg viewBox="0 0 40 40" aria-hidden="true">
         <defs>
           <radialGradient id="lgB" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#727a92"/><stop offset=".45" stop-color="#262a35"/><stop offset="1" stop-color="#090a0e"/></radialGradient>
@@ -351,10 +504,11 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
         <circle cx="15" cy="16" r="12" fill="url(#lgB)"/>
       </svg>
       <h1>Baduk Buddies</h1>
-    </div>
+    </a>
     <div class="top-actions">
+      <button class="icon-btn help" id="btnHelp" type="button" aria-label="게임 방법">?</button>
       <button class="icon-btn" id="btnSound" type="button" aria-label="소리 끄기"></button>
-      <button class="btn slim" id="btnNew" type="button">
+      <button class="btn slim" id="btnNew" type="button" aria-label="새 게임">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>새 게임
       </button>
     </div>
@@ -368,6 +522,44 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
       <svg viewBox="0 0 40 40" aria-hidden="true"><polygon points="13,3 27,3 37,13 37,27 27,37 13,37 3,27 3,13" fill="#f6e9cc" stroke="#b08a4f" stroke-width="2"/><text x="20" y="21" text-anchor="middle" dominant-baseline="central" font-size="19" font-family="Noto Serif KR, serif" font-weight="700" fill="#c3262e">將</text></svg>장기
     </button>
   </nav>
+
+
+  <main class="home" id="view-home" role="tabpanel" aria-label="홈" hidden>
+    <section class="hero">
+      <div class="cast" id="homeCast"></div>
+      <h2 class="hero-title">오늘은 누구랑 한 판?</h2>
+      <p class="hero-sub">바둑 친구들과 바둑도 장기도 두어 보세요. 입문부터 프로까지 실력에 맞는 상대가 있어요.</p>
+    </section>
+    <div class="gamecards">
+      <article class="gcard" aria-labelledby="hcB">
+        <div class="gcard-art" id="artBaduk"></div>
+        <div>
+          <h3 id="hcB">바둑</h3>
+          <p>9×9 빠른 한 판부터 19×19 정식 대국까지. 신경망 프로 AI 청룡도 기다려요.</p>
+          <p class="prog" id="progBaduk" hidden></p>
+          <p class="rec" id="recBaduk"></p>
+          <div class="gcard-actions">
+            <button class="btn primary" id="homeBadukGo" type="button">시작하기</button>
+            <button class="btn" id="homeBadukNew" type="button" hidden>새 게임</button>
+          </div>
+        </div>
+      </article>
+      <article class="gcard" aria-labelledby="hcJ">
+        <div class="gcard-art" id="artJanggi"></div>
+        <div>
+          <h3 id="hcJ">장기</h3>
+          <p>상차림 4가지, 한자·한글 기물. 장군을 부르고 외통으로 끝내 보세요.</p>
+          <p class="prog" id="progJanggi" hidden></p>
+          <p class="rec" id="recJanggi"></p>
+          <div class="gcard-actions">
+            <button class="btn primary" id="homeJanggiGo" type="button">시작하기</button>
+            <button class="btn" id="homeJanggiNew" type="button" hidden>새 게임</button>
+          </div>
+        </div>
+      </article>
+    </div>
+    <p class="credit">프로 AI(청룡)는 KataGo의 공개 신경망(© David J Wu, MIT 라이선스)으로 둬요. 기록은 이 브라우저에만 저장돼요.</p>
+  </main>
 
   <main class="stage" id="view-baduk" role="tabpanel" aria-labelledby="tab-baduk">
     <section class="board-col" aria-label="대국">
@@ -388,6 +580,7 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
           <defs>
             <radialGradient id="gB" cx="36%" cy="30%" r="72%"><stop offset="0" stop-color="#6f768c"/><stop offset=".38" stop-color="#282b36"/><stop offset="1" stop-color="#08090d"/></radialGradient>
             <radialGradient id="gW" cx="36%" cy="30%" r="78%"><stop offset="0" stop-color="#ffffff"/><stop offset=".58" stop-color="#f1eee6"/><stop offset="1" stop-color="#c7c1b3"/></radialGradient>
+            <linearGradient id="gWs" x1="0" y1="0" x2="0.05" y2="0.11" spreadMethod="repeat"><stop offset="0" stop-color="#8a7f66" stop-opacity="0"/><stop offset=".5" stop-color="#8a7f66" stop-opacity=".1"/><stop offset="1" stop-color="#8a7f66" stop-opacity="0"/></linearGradient>
           </defs>
           <g id="gGrid"></g>
           <g id="gStones"></g>
@@ -623,6 +816,21 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
       <button class="btn" id="jConfirmNo" type="button">계속 둘래요</button>
       <button class="btn primary" id="jConfirmYes" type="button">기권하기</button>
     </div>
+  </div>
+</div>
+
+<!-- 게임 방법 -->
+<div class="scrim" id="helpScrim">
+  <div class="sheet" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="sheet-head">
+      <h2 id="helpTitle">게임 방법</h2>
+      <button class="icon-btn" id="helpClose" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="seg help-tabs" role="tablist" aria-label="게임 고르기">
+      <input class="sr" type="radio" name="helpg" id="helpB" value="baduk"><label for="helpB"><b>바둑</b></label>
+      <input class="sr" type="radio" name="helpg" id="helpJ" value="janggi"><label for="helpJ"><b>장기</b></label>
+    </div>
+    <div class="help-body" id="helpBody"></div>
   </div>
 </div>
 
@@ -1784,6 +1992,134 @@ const NN_WASM_B64 = 'AGFzbQEAAAABMQdgAX8Bf2ACf38AYAJ/fwF/YAABf2AGf39/f39/AGAJf39
 const NN_META = {"name":"g170-b10c128-s1141046784-d204142634","version":8,"inputs":22,"globals":19,"trunk":128,"blocks":["o","o","o","o","g","o","o","g","o","o"],"layers":[{"k":"init.conv","shape":[5,5,22,128],"off":0,"n":70400},{"k":"init.mul","shape":[19,128],"off":70400,"n":2432},{"k":"b0.pre.s","shape":[128],"off":72832,"n":128},{"k":"b0.pre.b","shape":[128],"off":72960,"n":128},{"k":"b0.conv1","shape":[3,3,128,128],"off":73088,"n":147456},{"k":"b0.mid.s","shape":[128],"off":220544,"n":128},{"k":"b0.mid.b","shape":[128],"off":220672,"n":128},{"k":"b0.conv2","shape":[3,3,128,128],"off":220800,"n":147456},{"k":"b1.pre.s","shape":[128],"off":368256,"n":128},{"k":"b1.pre.b","shape":[128],"off":368384,"n":128},{"k":"b1.conv1","shape":[3,3,128,128],"off":368512,"n":147456},{"k":"b1.mid.s","shape":[128],"off":515968,"n":128},{"k":"b1.mid.b","shape":[128],"off":516096,"n":128},{"k":"b1.conv2","shape":[3,3,128,128],"off":516224,"n":147456},{"k":"b2.pre.s","shape":[128],"off":663680,"n":128},{"k":"b2.pre.b","shape":[128],"off":663808,"n":128},{"k":"b2.conv1","shape":[3,3,128,128],"off":663936,"n":147456},{"k":"b2.mid.s","shape":[128],"off":811392,"n":128},{"k":"b2.mid.b","shape":[128],"off":811520,"n":128},{"k":"b2.conv2","shape":[3,3,128,128],"off":811648,"n":147456},{"k":"b3.pre.s","shape":[128],"off":959104,"n":128},{"k":"b3.pre.b","shape":[128],"off":959232,"n":128},{"k":"b3.conv1","shape":[3,3,128,128],"off":959360,"n":147456},{"k":"b3.mid.s","shape":[128],"off":1106816,"n":128},{"k":"b3.mid.b","shape":[128],"off":1106944,"n":128},{"k":"b3.conv2","shape":[3,3,128,128],"off":1107072,"n":147456},{"k":"b4.pre.s","shape":[128],"off":1254528,"n":128},{"k":"b4.pre.b","shape":[128],"off":1254656,"n":128},{"k":"b4.conv1","shape":[3,3,128,96],"off":1254784,"n":110592},{"k":"b4.gconv","shape":[3,3,128,32],"off":1365376,"n":36864},{"k":"b4.gbn.s","shape":[32],"off":1402240,"n":32},{"k":"b4.gbn.b","shape":[32],"off":1402272,"n":32},{"k":"b4.gmul","shape":[96,96],"off":1402304,"n":9216},{"k":"b4.mid.s","shape":[96],"off":1411520,"n":96},{"k":"b4.mid.b","shape":[96],"off":1411616,"n":96},{"k":"b4.conv2","shape":[3,3,96,128],"off":1411712,"n":110592},{"k":"b5.pre.s","shape":[128],"off":1522304,"n":128},{"k":"b5.pre.b","shape":[128],"off":1522432,"n":128},{"k":"b5.conv1","shape":[3,3,128,128],"off":1522560,"n":147456},{"k":"b5.mid.s","shape":[128],"off":1670016,"n":128},{"k":"b5.mid.b","shape":[128],"off":1670144,"n":128},{"k":"b5.conv2","shape":[3,3,128,128],"off":1670272,"n":147456},{"k":"b6.pre.s","shape":[128],"off":1817728,"n":128},{"k":"b6.pre.b","shape":[128],"off":1817856,"n":128},{"k":"b6.conv1","shape":[3,3,128,128],"off":1817984,"n":147456},{"k":"b6.mid.s","shape":[128],"off":1965440,"n":128},{"k":"b6.mid.b","shape":[128],"off":1965568,"n":128},{"k":"b6.conv2","shape":[3,3,128,128],"off":1965696,"n":147456},{"k":"b7.pre.s","shape":[128],"off":2113152,"n":128},{"k":"b7.pre.b","shape":[128],"off":2113280,"n":128},{"k":"b7.conv1","shape":[3,3,128,96],"off":2113408,"n":110592},{"k":"b7.gconv","shape":[3,3,128,32],"off":2224000,"n":36864},{"k":"b7.gbn.s","shape":[32],"off":2260864,"n":32},{"k":"b7.gbn.b","shape":[32],"off":2260896,"n":32},{"k":"b7.gmul","shape":[96,96],"off":2260928,"n":9216},{"k":"b7.mid.s","shape":[96],"off":2270144,"n":96},{"k":"b7.mid.b","shape":[96],"off":2270240,"n":96},{"k":"b7.conv2","shape":[3,3,96,128],"off":2270336,"n":110592},{"k":"b8.pre.s","shape":[128],"off":2380928,"n":128},{"k":"b8.pre.b","shape":[128],"off":2381056,"n":128},{"k":"b8.conv1","shape":[3,3,128,128],"off":2381184,"n":147456},{"k":"b8.mid.s","shape":[128],"off":2528640,"n":128},{"k":"b8.mid.b","shape":[128],"off":2528768,"n":128},{"k":"b8.conv2","shape":[3,3,128,128],"off":2528896,"n":147456},{"k":"b9.pre.s","shape":[128],"off":2676352,"n":128},{"k":"b9.pre.b","shape":[128],"off":2676480,"n":128},{"k":"b9.conv1","shape":[3,3,128,128],"off":2676608,"n":147456},{"k":"b9.mid.s","shape":[128],"off":2824064,"n":128},{"k":"b9.mid.b","shape":[128],"off":2824192,"n":128},{"k":"b9.conv2","shape":[3,3,128,128],"off":2824320,"n":147456},{"k":"tip.s","shape":[128],"off":2971776,"n":128},{"k":"tip.b","shape":[128],"off":2971904,"n":128},{"k":"p1.conv","shape":[1,1,128,32],"off":2972032,"n":4096},{"k":"g1.conv","shape":[1,1,128,32],"off":2976128,"n":4096},{"k":"g1.bn.s","shape":[32],"off":2980224,"n":32},{"k":"g1.bn.b","shape":[32],"off":2980256,"n":32},{"k":"p.gmul","shape":[96,32],"off":2980288,"n":3072},{"k":"p1.bn.s","shape":[32],"off":2983360,"n":32},{"k":"p1.bn.b","shape":[32],"off":2983392,"n":32},{"k":"p2.conv","shape":[1,1,32,1],"off":2983424,"n":32},{"k":"p.passmul","shape":[96,1],"off":2983456,"n":96},{"k":"v1.conv","shape":[1,1,128,32],"off":2983552,"n":4096},{"k":"v1.bn.s","shape":[32],"off":2987648,"n":32},{"k":"v1.bn.b","shape":[32],"off":2987680,"n":32},{"k":"v2.mul","shape":[96,80],"off":2987712,"n":7680},{"k":"v2.bias","shape":[80],"off":2995392,"n":80},{"k":"v3.mul","shape":[80,3],"off":2995472,"n":240},{"k":"v3.bias","shape":[3],"off":2995712,"n":3},{"k":"sv3.mul","shape":[80,4],"off":2995715,"n":320},{"k":"sv3.bias","shape":[4],"off":2996035,"n":4},{"k":"vown.conv","shape":[1,1,32,1],"off":2996039,"n":32}]};
 </script>
 <script>
+// ===== 공통 연출 =====
+window.FX = (() => {
+  const reduce = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const center = (el) => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height }; };
+
+  // 통통 튀기 (점수 그릇 등)
+  function bump(el) {
+    if (!el) return;
+    el.classList.remove('fx-bump'); void el.offsetWidth; el.classList.add('fx-bump');
+  }
+  // 화면 좌표 (x, y)에서 target 요소까지 포물선으로 날아가기
+  function fly(html, x, y, size, target, delay = 0, onLand) {
+    if (!target || reduce() || !document.body.animate) { if (onLand) onLand(); return; }
+    const t = center(target);
+    const d = document.createElement('div');
+    d.className = 'fx-fly';
+    d.style.cssText = `width:${size}px;height:${size}px;left:${x - size / 2}px;top:${y - size / 2}px`;
+    d.innerHTML = html;
+    document.body.appendChild(d);
+    const dx = t.x - x, dy = t.y - y, lift = Math.min(170, Math.abs(dx) * 0.25 + Math.abs(dy) * 0.15 + 70);
+    const anim = d.animate([
+      { transform: 'translate(0, 0) scale(1) rotate(0deg)', opacity: 1 },
+      { transform: `translate(${dx * 0.45}px, ${dy * 0.45 - lift}px) scale(1.05) rotate(${dx > 0 ? 25 : -25}deg)`, opacity: 1, offset: 0.45 },
+      { transform: `translate(${dx}px, ${dy}px) scale(0.38) rotate(${dx > 0 ? 50 : -50}deg)`, opacity: 0.95 }
+    ], { duration: 640, delay, easing: 'cubic-bezier(.4, .1, .5, 1)', fill: 'both' });
+    anim.onfinish = () => { d.remove(); bump(target); if (onLand) onLand(); };
+  }
+  // 위로 떠오르는 글자 (+13 같은)
+  function floatText(target, text, cls = '') {
+    if (!target || reduce()) return;
+    const t = center(target);
+    const d = document.createElement('div');
+    d.className = 'fx-float ' + cls;
+    d.textContent = text;
+    d.style.left = t.x + 'px'; d.style.top = (t.y - t.h / 2) + 'px';
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 1100);
+  }
+  // 판 가운데 찍히는 도장 배너
+  function stamp(container, text, cls = '') {
+    if (!container) return;
+    container.querySelectorAll('.fx-stamp').forEach((s) => s.remove());
+    const s = document.createElement('div');
+    s.className = 'fx-stamp ' + cls;
+    s.textContent = text;
+    container.appendChild(s);
+    setTimeout(() => s.remove(), reduce() ? 900 : 1500);
+  }
+  // 바둑판 위 착수 물결
+  function ripple(svgLayer, x, y, r) {
+    if (!svgLayer || reduce()) return;
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', r);
+    c.setAttribute('class', 'fx-ripple');
+    svgLayer.appendChild(c);
+    setTimeout(() => c.remove(), 650);
+  }
+  // 캐릭터 반응: happy, sad, cheer / think(on/off)
+  function react(avatar, kind, on) {
+    if (!avatar) return;
+    if (kind === 'think') { avatar.classList.toggle('r-think', !!on); return; }
+    avatar.classList.remove('r-think', 'r-happy', 'r-sad', 'r-cheer');
+    void avatar.offsetWidth;
+    avatar.classList.add('r-' + kind);
+    clearTimeout(avatar._rt);
+    avatar._rt = setTimeout(() => avatar.classList.remove('r-' + kind), kind === 'cheer' ? 2400 : 900);
+  }
+  // 짧은 진동 (지원하는 휴대폰만)
+  function haptic(ms = 12) {
+    try { if (window.Buddies && window.Buddies.Sound && !window.Buddies.Sound.on) return; if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* 무시 */ }
+  }
+  // 꽃가루
+  function confetti() {
+    if (reduce()) return;
+    const cv = document.createElement('canvas');
+    cv.className = 'fx-confetti';
+    document.body.appendChild(cv);
+    const dpr = Math.min(2, window.devicePixelRatio || 1), W = window.innerWidth, H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+    const colors = ['#2b52dc', '#ffb020', '#e0483c', '#16a36a', '#8a5cf6', '#ff7ab8', '#f2cd8c'];
+    const parts = [];
+    for (let i = 0; i < 160; i++) {
+      const fromLeft = i % 2 === 0;
+      parts.push({
+        x: fromLeft ? -10 : W + 10, y: H * (0.55 + Math.random() * 0.25),
+        vx: (fromLeft ? 1 : -1) * (4 + Math.random() * 7), vy: -(9 + Math.random() * 9),
+        w: 6 + Math.random() * 6, h: 9 + Math.random() * 8, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.35,
+        c: colors[i % colors.length], shape: i % 5 === 0 ? 'circle' : 'rect'
+      });
+    }
+    const t0 = performance.now();
+    const step = (now) => {
+      const t = now - t0;
+      ctx.clearRect(0, 0, W, H);
+      for (const p of parts) {
+        p.vy += 0.32; p.vx *= 0.985; p.vy *= 0.985; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+        ctx.globalAlpha = Math.max(0, 1 - Math.max(0, t - 2200) / 800);
+        ctx.fillStyle = p.c;
+        if (p.shape === 'circle') { ctx.beginPath(); ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2); ctx.fill(); }
+        else ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * Math.abs(Math.cos(p.r * 1.7)) + 2);
+        ctx.restore();
+      }
+      if (t < 3000) requestAnimationFrame(step); else cv.remove();
+    };
+    requestAnimationFrame(step);
+  }
+  // 숫자 올라가는 애니메이션
+  function countUp(el, to, ms = 700, fmt = (v) => String(v)) {
+    if (!el) return;
+    if (reduce()) { el.textContent = fmt(to); return; }
+    const t0 = performance.now();
+    const step = (now) => {
+      const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3);
+      const v = to * e;
+      el.textContent = fmt(Number.isInteger(to) ? Math.round(v) : Math.round(v * 2) / 2);
+      if (k < 1) requestAnimationFrame(step); else el.textContent = fmt(to);
+    };
+    requestAnimationFrame(step);
+  }
+  // 화면 전환 효과
+  function enter(el) { if (!el || reduce()) return; el.classList.remove('fx-enter'); void el.offsetWidth; el.classList.add('fx-enter'); }
+  return { bump, fly, floatText, stamp, ripple, react, haptic, confetti, countUp, enter, center };
+})();
+
+</script>
+<script>
 (() => {
   'use strict';
   const $ = (s) => document.querySelector(s);
@@ -2185,7 +2521,7 @@ self.onmessage = async (e) => {
     el.gFx.innerHTML = '';
   }
   function stoneEl(x, y, v, cls, dead) {
-    return `<g transform="translate(${x} ${y})"${dead ? ' class="dead"' : ''}><g${cls ? ` class="${cls}"` : ''}><circle class="sh" cx="5" cy="7" r="46"/><circle r="46" fill="url(#${v === BLACK ? 'gB' : 'gW'})"${v === WHITE ? ' class="wst"' : ''}/></g></g>`;
+    return `<g transform="translate(${x} ${y})"${dead ? ' class="dead"' : ''}><g${cls ? ` class="${cls}"` : ''}><circle class="sh" cx="5" cy="7" r="46"/><circle r="46" fill="url(#${v === BLACK ? 'gB' : 'gW'})"${v === WHITE ? ' class="wst"' : ''}/>${v === WHITE ? '<circle r="44" fill="url(#gWs)"/>' : ''}</g></g>`;
   }
   function renderStones(newP) {
     const b = G.board, n = G.size, showDead = G.phase !== 'play' && G.dead;
@@ -2339,6 +2675,7 @@ self.onmessage = async (e) => {
     if (G.level === 3) NNPool.load();
     Object.assign(G, { phase: 'play', busy: false, thinking: false, hinting: false, dead: null, score: null, hint: -1, pending: -1, hover: -1, cursor: -1, hints: 0, result: null });
     setupGrid(); renderPlayers(); renderAll();
+    FX.enter(el.board); FX.react(el.oppAvatar, 'happy');
     say(pick(CHAR[G.level].greet));
     if (cfg.color === 'random') toast(G.user === BLACK ? '나는 흑이에요. 먼저 두세요!' : '나는 백이에요. 상대가 먼저 둬요.');
     save();
@@ -2353,6 +2690,16 @@ self.onmessage = async (e) => {
     if (k) for (let i = 0; i < b.len; i++) if (before[i] === 3 - col && b.c[i] === EMPTY) caps.push({ p: i, v: 3 - col });
     renderAll(p); captureFx(caps);
     Sound.stone(); if (k) setTimeout(() => Sound.capture(k), 110);
+    FX.ripple(el.gFx, px(p), py(p), 46); FX.haptic(k ? 25 : 10);
+    if (k) {
+      // 따낸 돌이 잡은 쪽 그릇으로 날아간다
+      const r = el.svg.getBoundingClientRect(), V = vbSize(), size = (92 / V) * r.width;
+      const lid = (col === G.user ? el.meCaps : el.oppCaps).parentElement;
+      caps.slice(0, 16).forEach(({ p: q, v }, i) => {
+        FX.fly(`<div class="fx-stone ${v === BLACK ? 'b' : 'w'}"></div>`, r.left + (px(q) / V) * r.width, r.top + (py(q) / V) * r.height, size, lid, 120 + i * 45, i === 0 ? () => FX.floatText(lid, '+' + k) : null);
+      });
+      if (k >= 3) FX.stamp(el.board, `${k}점 따냄!`, col === G.user ? 'gold' : '');
+    }
     return k;
   }
 
@@ -2382,7 +2729,7 @@ self.onmessage = async (e) => {
   }
   function userMove(p) {
     const k = applyMove(p, G.user);
-    if (k) say(pick(CHAR[G.level].capUser));
+    if (k) { say(pick(CHAR[G.level].capUser)); FX.react(el.oppAvatar, 'sad'); }
     save();
     aiTurn(false);
   }
@@ -2427,8 +2774,9 @@ self.onmessage = async (e) => {
     const token = G.token, ch = CHAR[G.level];
     G.busy = true; G.thinking = true; G.pending = -1;
     sayThinking(); renderMarks(); updateHUD();
+    FX.react(el.oppAvatar, 'think', true);
     await sleep(40);
-    if (token !== G.token) return;
+    if (token !== G.token) { FX.react(el.oppAvatar, 'think', false); return; }
     const t0 = performance.now();
     let d;
     try { d = G.level === 3 ? await proDecide(userPassed, token) : await decideAI(G.board, G.level, userPassed, () => token !== G.token, poolSearch); }
@@ -2436,6 +2784,7 @@ self.onmessage = async (e) => {
     if (d.cancelled) return;
     const wait = 520 - (performance.now() - t0);
     if (wait > 0) await sleep(wait);
+    FX.react(el.oppAvatar, 'think', false);
     if (token !== G.token) return;
     G.busy = false; G.thinking = false;
     if (d.sims) G.lastSims = d.sims;
@@ -2448,11 +2797,12 @@ self.onmessage = async (e) => {
       G.board.pass(); G.moves.push(PASS); Sound.pass();
       say(pick(ch.pass));
       if (G.board.passes >= 2) { startScoring(); return; }
+      FX.stamp(el.board, `${ch.name} 패스`, 'small');
       renderAll(); save();
       return;
     }
     const k = applyMove(d.move, G.ai);
-    if (k) say(pick(ch.capAI));
+    if (k) { say(pick(ch.capAI)); FX.react(el.oppAvatar, 'happy'); }
     else if (userPassed) say(pick(ch.keepGoing));
     else say(pick(ch.move));
     save();
@@ -2463,6 +2813,7 @@ self.onmessage = async (e) => {
     G.phase = 'scoring'; G.busy = true; G.thinking = false; G.hinting = false; G.hint = -1; G.pending = -1;
     G.dead = null; G.score = null;
     renderAll();
+    FX.stamp(el.board, '대국 끝! 계가해요', 'small');
     const n = G.size;
     let own = null;
     if (NNPool.state === 'ready') { try { own = await ProAI.ownership(n, G.moves.slice(), KOMI); } catch (e) { own = null; } }
@@ -2521,6 +2872,10 @@ self.onmessage = async (e) => {
     $('#resultBody').innerHTML = body + `<p class="result-sub" style="margin:10px 0 0">${ch.name} 상대 전적 ${rec.w}승 ${rec.l}패${G.hints ? ` · 이번 판 힌트 ${G.hints}번` : ''}</p>`;
     const line = r.by === 'resign' && r.resigner === G.ai ? pick(ch.resign) : won ? pick(ch.aiLose) : pick(ch.aiWin);
     $('#resultQuote').textContent = `${ch.name}: “${line}”`;
+    document.querySelectorAll('#resultBody td.sum').forEach((td) => { const v = parseFloat(td.textContent); if (!isNaN(v)) FX.countUp(td, v, 800, fmt); });
+    setTimeout(() => FX.react($('#resAvatar'), won ? 'sad' : 'cheer'), 120);
+    if (won && !r.shownFx) { r.shownFx = true; FX.confetti(); }
+    FX.react(el.oppAvatar, won ? 'sad' : 'cheer');
     openScrim('resultScrim');
   }
 
@@ -2729,9 +3084,15 @@ self.onmessage = async (e) => {
       say(pick(CHAR[G.level].greet));
     }
   }
-  window.Buddies = { Sound, toast, store, avatarSVG, openScrim, closeScrim, iga, pick, sleep };
+  window.Buddies = { Sound, toast, store, avatarSVG, openScrim, closeScrim, iga, pick, sleep, CHAR };
   window.BadukApp = {
     start, snapshot, openSetup,
+    summary() {
+      const inProgress = G.phase === 'play' || G.phase === 'scoring';
+      const rec = { w: 0, l: 0, d: 0 };
+      for (const k in stats) { rec.w += stats[k].w || 0; rec.l += stats[k].l || 0; }
+      return { inProgress, opponent: CHAR[G.level].name, detail: `${G.size}×${G.size} · ${G.board.moveNum}수째`, rec };
+    },
     onShow() { if (G.phase === 'setup' && !this.shown) { this.shown = true; openSetup(); } }
   };
 })();
@@ -3132,6 +3493,7 @@ if (typeof module !== 'undefined') module.exports = JanggiEngine;
   const JE = JanggiEngine;
   const { CHO, HAN, PASS, K, A, E, H, R, C, P } = JE;
   const { Sound, toast, store, avatarSVG, openScrim, closeScrim, iga, pick, sleep } = window.Buddies;
+  const FX = window.FX;
   const $ = (s) => document.querySelector(s);
   const JCS = 100, JM = 70;
   const SAVE_KEY = 'buddies-janggi-game-v1', STATS_KEY = 'buddies-janggi-stats-v1', PREF_KEY = 'buddies-janggi-prefs-v1';
@@ -3258,7 +3620,7 @@ if (typeof module !== 'undefined') module.exports = JanggiEngine;
     const cls = side === CHO ? 'cho' : 'han';
     const fs = J.labels === 'hangul' ? r * 0.95 : r * 1.12;
     return `<g class="jp-in"><polygon class="jp-sh" points="${oct(r)}" transform="translate(4 6)"/>` +
-      `<polygon class="jp-body" points="${oct(r)}"/><polygon class="jp-ring ${cls}" points="${oct(r * 0.8)}"/>` +
+      `<polygon class="jp-body" points="${oct(r)}"/><polygon points="${oct(r - 2.6)}" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="1.6" transform="translate(-.8 -1.2)"/><polygon class="jp-ring ${cls}" points="${oct(r * 0.8)}"/>` +
       `<text class="jp-t ${cls}${J.labels === 'hangul' ? ' hg' : ''}" font-size="${fs.toFixed(0)}" text-anchor="middle" dominant-baseline="central" y="${J.labels === 'hangul' ? 2 : 1}">${label}</text></g>`;
   }
   const pieceEls = new Map();
@@ -3277,6 +3639,7 @@ if (typeof module !== 'undefined') module.exports = JanggiEngine;
         g._p = p;
         g.innerHTML = pieceInner(p);
         g.style.transform = `translate(${x}px, ${y}px)`;
+        if (J.deal) { g.classList.add('deal'); g.firstChild.style.animationDelay = `${(p > 0 ? 9 - ((s / 9) | 0) : ((s / 9) | 0)) * 45 + (s % 9) * 12}ms`; setTimeout(() => g.classList.remove('deal'), 1200); }
         el.pieces.appendChild(g);
         pieceEls.set(id, g);
       } else g.style.transform = `translate(${x}px, ${y}px)`;
@@ -3398,7 +3761,9 @@ if (typeof module !== 'undefined') module.exports = JanggiEngine;
     const aiSetup = SETUP_NAMES[(Math.random() * SETUP_NAMES.length) | 0];
     if (J.user === CHO) { J.choSetup = cfg.setup; J.hanSetup = aiSetup; } else { J.hanSetup = cfg.setup; J.choSetup = aiSetup; }
     J.moves = []; Object.assign(J, { phase: 'play', busy: false, thinking: false, hinting: false, sel: -1, targets: [], passes: 0, result: null, hints: 0, hint: null });
-    rebuild(); renderPlayers(); renderAll();
+    rebuild(); renderPlayers();
+    J.deal = true; renderAll(); J.deal = false;
+    FX.enter(el.board); FX.react(el.oppAvatar, 'happy');
     say(pick(JCHAR[J.level].greet));
     if (cfg.side === 'random') toast(J.user === CHO ? '나는 초예요. 먼저 두세요!' : '나는 한이에요. 상대가 먼저 둬요.');
     save();
@@ -3410,18 +3775,27 @@ if (typeof module !== 'undefined') module.exports = JanggiEngine;
     J.board[t] = J.board[f]; J.board[f] = 0; J.ids[t] = J.ids[f]; J.ids[f] = 0;
     J.moves.push(m); J.passes = 0; J.sel = -1; J.targets = []; J.hint = null;
     Sound.stone(); if (cap) setTimeout(() => Sound.capture(1), 90);
+    FX.haptic(cap ? 25 : 10);
     renderAll();
-    if (JE.kingsFacing(J.board)) { finish({ winner: 0, by: 'bikjang' }); return true; }
+    if (cap) {
+      // 잡은 기물이 잡은 쪽 점수 그릇으로 날아간다
+      const r = el.svg.getBoundingClientRect(), [vx, vy] = pos(t), size = (SIZE[Math.abs(cap)] * 2.1 / 940) * r.width;
+      const lid = (mover === J.user ? el.mePts : el.oppPts).parentElement;
+      const pts = JE.PTS[Math.abs(cap)];
+      FX.fly(`<svg viewBox="-50 -50 100 100">${pieceInner(cap)}</svg>`, r.left + (vx / 940) * r.width, r.top + (vy / 1040) * r.height, size, lid, 160, () => FX.floatText(lid, '+' + pts));
+      if (Math.abs(cap) === R) FX.stamp(el.board, '차 잡았다!', mover === J.user ? 'gold' : '');
+    }
+    if (JE.kingsFacing(J.board)) { FX.stamp(el.board, '빅장!', ''); finish({ winner: 0, by: 'bikjang' }); return true; }
     const opp = -mover;
     const legal = JE.legalMoves(J.board, opp);
     if (!legal.length) {
-      if (JE.inCheck(J.board, opp)) { finish({ winner: mover, by: 'mate' }); return true; }
+      if (JE.inCheck(J.board, opp)) { FX.stamp(el.board, '외통!', 'gold'); finish({ winner: mover, by: 'mate' }); return true; }
       // 둘 수가 없으면 자동으로 한 수 쉰다
       J.moves.push(PASS); J.passes = 1;
-      toast(`${opp === J.user ? '내가' : JCHAR[J.level].name + '가'} 둘 수 있는 수가 없어 한 수 쉬어요.`);
+      toast(`${opp === J.user ? '내가' : iga(JCHAR[J.level].name)} 둘 수 있는 수가 없어 한 수 쉬어요.`);
     }
     if (J.moves.length >= MAX_MOVES) { finishByPoints('limit'); return true; }
-    if (JE.inCheck(J.board, sideToMove())) Sound.tone([880, 1175], 0.09, 'square', 0.06);
+    if (JE.inCheck(J.board, sideToMove())) { Sound.tone([880, 1175], 0.09, 'square', 0.06); FX.stamp(el.board, '장군!', mover === CHO ? 'cho' : 'han'); }
     return false;
   }
   function finishByPoints(by) {
@@ -3451,8 +3825,8 @@ if (typeof module !== 'undefined') module.exports = JanggiEngine;
     save();
     if (ended) return;
     const ch = JCHAR[J.level];
-    if (JE.inCheck(J.board, J.ai)) say('앗, 장군이네요!');
-    else if (cap) say(pick(ch.capUser));
+    if (JE.inCheck(J.board, J.ai)) { say('앗, 장군이네요!'); FX.react(el.oppAvatar, 'sad'); }
+    else if (cap) { say(pick(ch.capUser)); FX.react(el.oppAvatar, 'sad'); }
     if (sideToMove() === J.ai) aiTurn(); else updateHUD();
   }
   function userPass() {
@@ -3466,12 +3840,14 @@ if (typeof module !== 'undefined') module.exports = JanggiEngine;
     const token = J.token, ch = JCHAR[J.level];
     const wasInCheck = JE.inCheck(J.board, J.ai);
     J.busy = true; J.thinking = true; sayThinking(); updateHUD();
+    FX.react(el.oppAvatar, 'think', true);
     await sleep(60);
-    if (token !== J.token) return;
+    if (token !== J.token) { FX.react(el.oppAvatar, 'think', false); return; }
     const t0 = performance.now();
     const r = await AIW.search(J.board, J.ai, LV[J.level]);
     const wait = 450 - (performance.now() - t0);
     if (wait > 0) await sleep(wait);
+    FX.react(el.oppAvatar, 'think', false);
     if (token !== J.token) return;
     J.busy = false; J.thinking = false;
     if (r.move === PASS || r.move == null) {
@@ -3487,9 +3863,9 @@ if (typeof module !== 'undefined') module.exports = JanggiEngine;
     const ended = applyMove(r.move, J.ai);
     save();
     if (ended) return;
-    if (JE.inCheck(J.board, J.user)) say(pick(ch.check));
+    if (JE.inCheck(J.board, J.user)) { say(pick(ch.check)); FX.react(el.oppAvatar, 'happy'); }
     else if (wasInCheck) say(pick(ch.escape));
-    else if (cap) say(pick(ch.capAI));
+    else if (cap) { say(pick(ch.capAI)); FX.react(el.oppAvatar, 'happy'); }
     else say(pick(ch.move));
     updateHUD();
     if (sideToMove() === J.ai) aiTurn();   // 내가 둘 수가 없어 자동으로 쉰 경우
@@ -3532,7 +3908,8 @@ if (typeof module !== 'undefined') module.exports = JanggiEngine;
     else if (res.by !== 'resign') say(res.winner === J.user ? pick(ch.aiLose) : pick(ch.aiWin));
     if (res.winner === J.user) Sound.win(); else if (res.winner !== 0) Sound.lose(); else Sound.pass();
     renderAll();
-    setTimeout(openResult, 350);
+    FX.react(el.oppAvatar, res.winner === 0 ? 'happy' : res.winner === J.user ? 'sad' : 'cheer');
+    setTimeout(openResult, res.by === 'mate' || res.by === 'bikjang' ? 1300 : 400);
   }
   function openResult() {
     const r = J.result; if (!r) return;
@@ -3559,6 +3936,9 @@ if (typeof module !== 'undefined') module.exports = JanggiEngine;
     const line = draw ? pick(ch.draw) : r.by === 'resign' && r.resigner === J.ai ? pick(ch.resign) : won ? pick(ch.aiLose) : pick(ch.aiWin);
     $('#jResultQuote').textContent = `${ch.name}: “${line}”`;
     openScrim('jResultScrim');
+    document.querySelectorAll('#jResultBody td.sum').forEach((td) => { const v = parseFloat(td.textContent); if (!isNaN(v)) FX.countUp(td, v, 800); });
+    setTimeout(() => FX.react($('#jResAvatar'), draw ? 'happy' : won ? 'sad' : 'cheer'), 120);
+    if (won && !r.shownFx) { r.shownFx = true; FX.confetti(); }
   }
 
   // ---- 설정 시트 ----
@@ -3654,29 +4034,198 @@ if (typeof module !== 'undefined') module.exports = JanggiEngine;
       say(pick(JCHAR[J.level].greet));
     }
   }
-  window.JanggiApp = { start, snapshot, openSetup, onShow() { if (J.phase === 'setup' && !this.shown) { this.shown = true; openSetup(); } } };
+  function summary() {
+    const rec = { w: 0, l: 0, d: 0 };
+    for (const k in stats) { rec.w += stats[k].w || 0; rec.l += stats[k].l || 0; rec.d += stats[k].d || 0; }
+    return { inProgress: J.phase === 'play', opponent: JCHAR[J.level].name, detail: `${sideName(J.user)} · ${J.moves.length}수째`, rec };
+  }
+  window.JanggiApp = { start, snapshot, openSetup, summary, onShow() { if (J.phase === 'setup' && !this.shown) { this.shown = true; openSetup(); } } };
 })();
 
 </script>
 <script>
-// ---- 게임 고르기(바둑/장기)와 시작 ----
+// ===== 홈 화면과 게임 방법 =====
+window.HomeApp = (() => {
+  const { avatarSVG, openScrim, closeScrim, pick, CHAR } = window.Buddies;
+  const $ = (s) => document.querySelector(s);
+  const hasB = (s) => { const c = s.charCodeAt(s.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; };
+  const wa = (s) => s + (hasB(s) ? '과' : '와');
+
+  // ---- 그림 ----
+  function badukArt() {
+    const sp = 15, m = 15, n = 7, end = m + (n - 1) * sp;
+    let g = '';
+    for (let i = 0; i < n; i++) { const c = m + i * sp; g += `<line x1="${m}" y1="${c}" x2="${end}" y2="${c}"/><line x1="${c}" y1="${m}" x2="${c}" y2="${end}"/>`; }
+    const stones = [[2, 2, 1], [3, 2, 2], [4, 3, 1], [3, 3, 2], [2, 4, 2], [4, 4, 1], [3, 4, 1], [1, 3, 2], [5, 2, 1]];
+    let st = '';
+    for (const [x, y, c] of stones) st += `<circle cx="${m + x * sp + 1}" cy="${m + y * sp + 1.5}" r="6.6" fill="rgba(60,30,0,.3)"/><circle cx="${m + x * sp}" cy="${m + y * sp}" r="6.6" fill="url(#ha${c})"${c === 2 ? ' stroke="rgba(0,0,0,.2)" stroke-width=".6"' : ''}/>`;
+    return `<svg viewBox="0 0 120 120" aria-hidden="true"><defs>
+      <linearGradient id="hwood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2cd8c"/><stop offset="1" stop-color="#cf9748"/></linearGradient>
+      <radialGradient id="ha1" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#737a90"/><stop offset=".45" stop-color="#262a35"/><stop offset="1" stop-color="#090a0e"/></radialGradient>
+      <radialGradient id="ha2" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#efebe2"/><stop offset="1" stop-color="#c6c0b2"/></radialGradient></defs>
+      <rect x="2" y="2" width="116" height="116" rx="12" fill="url(#hwood)"/>
+      <g stroke="#4a2e10" stroke-width=".9" opacity=".8">${g}</g>
+      <circle cx="${m + 3 * sp}" cy="${m + 3 * sp}" r="1.6" fill="#4a2e10"/>${st}</svg>`;
+  }
+  const oct = (r) => { const p = []; for (let k = 0; k < 8; k++) { const a = Math.PI / 8 + k * Math.PI / 4; p.push((r * Math.cos(a)).toFixed(2) + ',' + (r * Math.sin(a)).toFixed(2)); } return p.join(' '); };
+  const piece = (x, y, ch, side, r) => `<g transform="translate(${x} ${y})"><polygon points="${oct(r)}" transform="translate(.8 1.2)" fill="rgba(60,30,0,.3)"/><polygon points="${oct(r)}" fill="url(#hpb)" stroke="#9c7339" stroke-width=".7"/>` +
+    `<text text-anchor="middle" dominant-baseline="central" font-size="${(r * 1.15).toFixed(1)}" font-family="Noto Serif KR, serif" font-weight="700" fill="${side === 'cho' ? '#12744a' : '#c3262e'}">${ch}</text></g>`;
+  function janggiArt() {
+    const sp = 12.5, mx = 10, my = 9, W = mx * 2 + 8 * sp, H = my * 2 + 9 * sp;
+    let g = '';
+    for (let x = 0; x < 9; x++) g += `<line x1="${mx + x * sp}" y1="${my}" x2="${mx + x * sp}" y2="${my + 9 * sp}"/>`;
+    for (let y = 0; y < 10; y++) g += `<line x1="${mx}" y1="${my + y * sp}" x2="${mx + 8 * sp}" y2="${my + y * sp}"/>`;
+    for (const t of [0, 7]) g += `<line x1="${mx + 3 * sp}" y1="${my + t * sp}" x2="${mx + 5 * sp}" y2="${my + (t + 2) * sp}"/><line x1="${mx + 5 * sp}" y1="${my + t * sp}" x2="${mx + 3 * sp}" y2="${my + (t + 2) * sp}"/>`;
+    const P = (x, y, c, s, r = 7.2) => piece(mx + x * sp, my + y * sp, c, s, r);
+    const pcs = P(4, 1, '漢', 'han', 8.4) + P(6, 2, '馬', 'han') + P(2, 3, '兵', 'han', 6) + P(7, 0, '車', 'han') +
+      P(4, 8, '楚', 'cho', 8.4) + P(1, 4, '車', 'cho') + P(4, 5, '包', 'cho') + P(6, 6, '卒', 'cho', 6) + P(3, 9, '士', 'cho', 6);
+    return `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><defs>
+      <linearGradient id="hwood2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2cd8c"/><stop offset="1" stop-color="#cf9748"/></linearGradient>
+      <radialGradient id="hpb" cx="38%" cy="30%" r="80%"><stop offset="0" stop-color="#fffaf0"/><stop offset=".6" stop-color="#f3e3bf"/><stop offset="1" stop-color="#dcc08a"/></radialGradient></defs>
+      <rect x="1" y="1" width="${W - 2}" height="${H - 2}" rx="10" fill="url(#hwood2)"/>
+      <g stroke="#4a2e10" stroke-width=".7" opacity=".75">${g}</g>${pcs}</svg>`;
+  }
+
+  // ---- 홈 ----
+  const CAST = [[0, 2, '하'], [1, 1, '중'], [2, 2, '상'], [3, 1, '프로']];
+  function renderCast() {
+    const box = $('#homeCast');
+    box.innerHTML = CAST.map(([lv, stone, tag], i) =>
+      `<button type="button" data-i="${i}" aria-label="${CHAR[lv].name} (${tag})"><span class="avatar">${avatarSVG(lv, stone)}</span><span class="nm">${CHAR[lv].name}</span><span class="lv">${tag}</span></button>`).join('');
+    box.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+      const lv = CAST[+b.dataset.i][0];
+      window.FX.react(b.querySelector('.avatar'), 'happy');
+      box.querySelectorAll('.say').forEach((s) => s.remove());
+      const s = document.createElement('span'); s.className = 'say'; s.textContent = pick(CHAR[lv].greet);
+      b.appendChild(s); clearTimeout(b._t); b._t = setTimeout(() => s.remove(), 2200);
+      window.Buddies.Sound.ensure(); window.Buddies.Sound.stone(0.4);
+    }));
+  }
+  function recText(r) {
+    if (!r.w && !r.l && !r.d) return '아직 기록이 없어요. 첫 판을 둬 보세요!';
+    return `내 전적 ${r.w}승 ${r.l}패${r.d ? ` ${r.d}무` : ''}`;
+  }
+  function refresh() {
+    for (const [key, app, sfx] of [['Baduk', window.BadukApp, 'Baduk'], ['Janggi', window.JanggiApp, 'Janggi']]) {
+      const sm = app.summary();
+      const prog = $('#prog' + sfx), go = $('#home' + sfx + 'Go'), nw = $('#home' + sfx + 'New');
+      prog.hidden = !sm.inProgress;
+      prog.textContent = sm.inProgress ? `${wa(sm.opponent)} 두는 중 · ${sm.detail}` : '';
+      go.textContent = sm.inProgress ? '이어서 두기' : '시작하기';
+      nw.hidden = !sm.inProgress;
+      $('#rec' + sfx).textContent = recText(sm.rec);
+      void key;
+    }
+  }
+  function openGame(view, fresh) {
+    const app = view === 'baduk' ? window.BadukApp : window.JanggiApp;
+    window.Router.show(view);
+    if (fresh || !app.summary().inProgress) app.openSetup();
+  }
+  $('#homeBadukGo').addEventListener('click', () => openGame('baduk', false));
+  $('#homeBadukNew').addEventListener('click', () => openGame('baduk', true));
+  $('#homeJanggiGo').addEventListener('click', () => openGame('janggi', false));
+  $('#homeJanggiNew').addEventListener('click', () => openGame('janggi', true));
+
+  // ---- 게임 방법 ----
+  const W = 20, M = 12;
+  function grid(cols, rows, palace) {
+    let g = '';
+    for (let x = 0; x < cols; x++) g += `<line x1="${M + x * W}" y1="${M}" x2="${M + x * W}" y2="${M + (rows - 1) * W}"/>`;
+    for (let y = 0; y < rows; y++) g += `<line x1="${M}" y1="${M + y * W}" x2="${M + (cols - 1) * W}" y2="${M + y * W}"/>`;
+    if (palace) { const [x0, y0] = palace; g += `<line x1="${M + x0 * W}" y1="${M + y0 * W}" x2="${M + (x0 + 2) * W}" y2="${M + (y0 + 2) * W}"/><line x1="${M + (x0 + 2) * W}" y1="${M + y0 * W}" x2="${M + x0 * W}" y2="${M + (y0 + 2) * W}"/>`; }
+    return g;
+  }
+  function diagram(cols, rows, inner, palace) {
+    const w = M * 2 + (cols - 1) * W, h = M * 2 + (rows - 1) * W;
+    return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true"><rect width="${w}" height="${h}" fill="url(#hwood)"/><g stroke="#4a2e10" stroke-width="1" opacity=".75">${grid(cols, rows, palace)}</g>${inner}</svg>`;
+  }
+  const at = (x) => M + x * W;
+  const stoneD = (x, y, c, ghost) => `<circle cx="${at(x)}" cy="${at(y)}" r="9" fill="url(#ha${c})"${c === 2 ? ' stroke="rgba(0,0,0,.25)" stroke-width=".8"' : ''}${ghost ? ' opacity=".45"' : ''}/>`;
+  const dot = (x, y) => `<circle class="mini-dot" cx="${at(x)}" cy="${at(y)}" r="3.6"/>`;
+  const xm = (x, y) => `<path class="mini-x" d="M${at(x) - 4} ${at(y) - 4}l8 8M${at(x) + 4} ${at(y) - 4}l-8 8"/>`;
+  const pc = (x, y, ch, side, r = 8.6) => piece(at(x), at(y), ch, side, r);
+  const terr = (x, y) => `<rect x="${at(x) - 3.5}" y="${at(y) - 3.5}" width="7" height="7" rx="1.5" fill="#17181f"/>`;
+
+  function badukHelp() {
+    const cap = diagram(5, 5, stoneD(2, 2, 2) + stoneD(1, 2, 1) + stoneD(3, 2, 1) + stoneD(2, 1, 1) + stoneD(2, 3, 1, true) + dot(2, 3));
+    const area = diagram(5, 5, [[0, 2], [1, 2], [2, 2], [2, 1], [2, 0]].map(([x, y]) => stoneD(x, y, 1)).join('') + [[0, 0], [1, 0], [0, 1], [1, 1]].map(([x, y]) => terr(x, y)).join('') + stoneD(3, 3, 2) + stoneD(4, 2, 2));
+    const ko = diagram(4, 3, stoneD(1, 0, 1) + stoneD(0, 1, 1) + stoneD(1, 2, 1) + stoneD(2, 0, 2) + stoneD(1, 1, 2) + stoneD(3, 1, 2) + stoneD(2, 2, 2) + dot(2, 1));
+    const end = diagram(4, 4, stoneD(1, 1, 1) + stoneD(2, 2, 2) + `<rect x="${at(0.15)}" y="${at(1.05)}" width="${W * 2.7}" height="${W * 0.9}" rx="8" fill="#2b52dc"/><text x="${at(1.5)}" y="${at(1.5)}" text-anchor="middle" dominant-baseline="central" font-family="Jua, sans-serif" font-size="15" fill="#fff">패스</text>`);
+    return [
+      ['집이 많으면 이겨요', '돌로 둘러싼 빈 곳이 집이에요. 끝났을 때 내 돌과 집을 더한 점수가 더 많으면 이겨요. 백은 덤 6.5점을 받아요.', area],
+      ['둘러싸면 따내요', '상대 돌이 숨 쉴 곳(바로 옆 빈 점)을 모두 막으면 그 돌을 따내요. 내 돌도 똑같이 잡힐 수 있어요.', cap],
+      ['패는 바로 못 되따요', '한 점을 서로 계속 따낼 수 있는 모양을 패라고 해요. 방금 따낸 자리는 다른 곳에 한 수 둔 다음에 따낼 수 있어요.', ko],
+      ['끝내기는 패스로', '더 둘 곳이 없으면 패스하세요. 둘 다 패스하면 계가해요. 죽은 돌 판정이 틀리면 돌을 탭해서 바꿀 수 있어요.', end]
+    ].map(([h, p, svg]) => `<section class="hsec">${svg}<div><h3>${h}</h3><p>${p}</p></div></section>`).join('');
+  }
+  function janggiHelp() {
+    const cells = [
+      ['궁 · 사', '궁성 밖으로 못 나가요. 선을 따라 한 칸씩, 대각선 선 위에선 대각선으로도.', diagram(3, 3, pc(1, 1, '楚', 'cho', 9.5) + [[0, 0], [1, 0], [2, 0], [0, 1], [2, 1], [0, 2], [1, 2], [2, 2]].map(([x, y]) => dot(x, y)).join(''), [0, 0])],
+      ['차 (13점)', '가로·세로로 막힐 때까지 쭉. 궁성 안에선 대각선 선도 따라가요.', diagram(5, 5, pc(2, 2, '車', 'cho') + [[2, 0], [2, 1], [2, 3], [2, 4], [0, 2], [1, 2], [3, 2], [4, 2]].map(([x, y]) => dot(x, y)).join(''))],
+      ['포 (7점)', '기물 하나를 꼭 넘어서 움직여요. 포끼리는 넘을 수도 잡을 수도 없어요.', diagram(3, 5, pc(1, 4, '包', 'cho') + pc(1, 2, '卒', 'cho', 7) + dot(1, 1) + dot(1, 0))],
+      ['마 (5점)', '한 칸 곧게 간 뒤 대각선 한 칸. 첫 칸이 막히면 그쪽으론 못 가요.', diagram(5, 5, pc(2, 2, '馬', 'cho') + pc(2, 1, '兵', 'han', 7) + [[0, 1], [0, 3], [4, 1], [4, 3], [1, 4], [3, 4]].map(([x, y]) => dot(x, y)).join('') + xm(1, 0) + xm(3, 0))],
+      ['상 (3점)', '한 칸 곧게 간 뒤 대각선 두 칸. 지나가는 칸이 막히면 못 가요.', diagram(7, 7, pc(3, 3, '象', 'cho') + [[1, 0], [5, 0], [1, 6], [5, 6], [0, 1], [6, 1], [0, 5], [6, 5]].map(([x, y]) => dot(x, y)).join(''))],
+      ['졸 · 병 (2점)', '앞이나 옆으로 한 칸. 뒤로는 못 가요. 상대 궁성에선 대각선 앞으로도.', diagram(3, 3, pc(1, 1, '卒', 'cho', 7.5) + dot(1, 0) + dot(0, 1) + dot(2, 1))]
+    ];
+    const grid6 = `<div class="pgrid">${cells.map(([b, t, svg]) => `<div class="pcell">${svg}<b>${b}</b><span>${t}</span></div>`).join('')}</div>`;
+    const check = diagram(3, 3, pc(1, 0, '漢', 'han', 9.5) + `<circle cx="${at(1)}" cy="${at(0)}" r="13" fill="none" stroke="#e03434" stroke-width="2"/>` + pc(1, 2, '車', 'cho'), [0, 0]);
+    const rules = [
+      ['장군을 부르고 외통으로', '상대 궁을 바로 잡을 수 있는 수가 장군, 그걸 피하는 게 멍군이에요. 어떻게 해도 장군을 못 피하면 외통, 그대로 이겨요.', check]
+    ].map(([h, p, svg]) => `<section class="hsec">${svg}<div><h3>${h}</h3><p>${p}</p></div></section>`).join('');
+    return rules + grid6 +
+      `<p class="tip" style="margin:0">궁끼리 같은 줄에서 사이에 아무것도 없이 마주 보면 <b>빅장</b>으로 비겨요. 200수가 넘거나 둘 다 한 수 쉬면 남은 기물 점수로 가려요(한은 덤 1.5점). 장군이 아닐 땐 <b>한수쉼</b>도 할 수 있어요.</p>`;
+  }
+  function renderHelp(which) {
+    $('#helpBody').innerHTML = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+      <linearGradient id="hwood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2cd8c"/><stop offset="1" stop-color="#cf9748"/></linearGradient>
+      <radialGradient id="ha1" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#737a90"/><stop offset=".45" stop-color="#262a35"/><stop offset="1" stop-color="#090a0e"/></radialGradient>
+      <radialGradient id="ha2" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#efebe2"/><stop offset="1" stop-color="#c6c0b2"/></radialGradient>
+      <radialGradient id="hpb" cx="38%" cy="30%" r="80%"><stop offset="0" stop-color="#fffaf0"/><stop offset=".6" stop-color="#f3e3bf"/><stop offset="1" stop-color="#dcc08a"/></radialGradient></defs></svg>` +
+      (which === 'janggi' ? janggiHelp() : badukHelp());
+  }
+  function openHelp() {
+    const which = window.Router && window.Router.view === 'janggi' ? 'janggi' : 'baduk';
+    document.getElementById(which === 'janggi' ? 'helpJ' : 'helpB').checked = true;
+    renderHelp(which);
+    openScrim('helpScrim');
+  }
+  document.querySelectorAll('input[name="helpg"]').forEach((r) => r.addEventListener('change', () => { if (r.checked) renderHelp(r.value); }));
+  $('#btnHelp').addEventListener('click', openHelp);
+  $('#helpClose').addEventListener('click', () => closeScrim('helpScrim'));
+  $('#helpScrim').addEventListener('click', (e) => { if (e.target.id === 'helpScrim') closeScrim('helpScrim'); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#helpScrim').classList.contains('open')) closeScrim('helpScrim'); });
+
+  function start() {
+    $('#artBaduk').innerHTML = badukArt();
+    $('#artJanggi').innerHTML = janggiArt();
+    renderCast();
+  }
+  return { start, onShow: refresh, refresh, badukArt, janggiArt };
+})();
+
+</script>
+<script>
+// ---- 화면 전환(홈/바둑/장기)과 시작 ----
 (() => {
-  const VIEWS = ['baduk', 'janggi'];
-  const apps = { baduk: window.BadukApp, janggi: window.JanggiApp };
+  const VIEWS = ['home', 'baduk', 'janggi'];
+  const apps = { home: window.HomeApp, baduk: window.BadukApp, janggi: window.JanggiApp };
   const Router = {
-    view: 'baduk',
+    view: null,
     show(v, quiet) {
-      if (!VIEWS.includes(v)) v = 'baduk';
+      if (!VIEWS.includes(v)) v = 'home';
+      const changed = this.view !== v;
       this.view = v;
-      for (const name of VIEWS) {
-        document.getElementById('view-' + name).hidden = name !== v;
+      for (const name of VIEWS) document.getElementById('view-' + name).hidden = name !== v;
+      for (const name of ['baduk', 'janggi']) {
         const t = document.getElementById('tab-' + name);
         t.setAttribute('aria-selected', String(name === v));
         t.tabIndex = name === v ? 0 : -1;
       }
-      try { localStorage.setItem('buddies-view', v); } catch (e) { /* 무시 */ }
+      document.body.dataset.view = v;
       if (location.hash !== '#' + v) { try { history.replaceState(null, '', '#' + v); } catch (e) { /* 무시 */ } }
       if (!quiet) window.scrollTo(0, 0);
+      if (changed) window.FX.enter(document.getElementById('view-' + v));
       if (apps[v] && apps[v].onShow) apps[v].onShow();
     }
   };
@@ -3688,15 +4237,16 @@ if (typeof module !== 'undefined') module.exports = JanggiEngine;
     Router.show(next); document.getElementById('tab-' + next).focus();
   });
   window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (VIEWS.includes(h) && h !== Router.view) Router.show(h); });
-  document.getElementById('btnNew').addEventListener('click', () => apps[Router.view].openSetup());
+  document.querySelector('.brand').addEventListener('click', (e) => { e.preventDefault(); Router.show('home'); });
+  document.getElementById('btnNew').addEventListener('click', () => apps[Router.view].openSetup && apps[Router.view].openSetup());
   const boot = (data) => {
     data = data || {};
     apps.baduk.start(data.baduk || {});
     apps.janggi.start(data.janggi || {});
+    apps.home.start();
     const h = location.hash.slice(1);
-    let v = VIEWS.includes(h) ? h : data.view;
-    if (!VIEWS.includes(v)) { try { v = localStorage.getItem('buddies-view'); } catch (e) { v = null; } }
-    Router.show(VIEWS.includes(v) ? v : 'baduk', true);
+    const v = VIEWS.includes(h) ? h : VIEWS.includes(data.view) ? data.view : 'home';
+    Router.show(v, true);
   };
   const hot = window.claude && window.claude.hot;
   if (hot && hot.snapshot) { try { hot.snapshot(() => ({ baduk: apps.baduk.snapshot(), janggi: apps.janggi.snapshot(), view: Router.view })); } catch (e) { /* 무시 */ } }

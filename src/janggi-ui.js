@@ -4,6 +4,7 @@
   const JE = JanggiEngine;
   const { CHO, HAN, PASS, K, A, E, H, R, C, P } = JE;
   const { Sound, toast, store, avatarSVG, openScrim, closeScrim, iga, pick, sleep } = window.Buddies;
+  const FX = window.FX;
   const $ = (s) => document.querySelector(s);
   const JCS = 100, JM = 70;
   const SAVE_KEY = 'buddies-janggi-game-v1', STATS_KEY = 'buddies-janggi-stats-v1', PREF_KEY = 'buddies-janggi-prefs-v1';
@@ -130,7 +131,7 @@
     const cls = side === CHO ? 'cho' : 'han';
     const fs = J.labels === 'hangul' ? r * 0.95 : r * 1.12;
     return `<g class="jp-in"><polygon class="jp-sh" points="${oct(r)}" transform="translate(4 6)"/>` +
-      `<polygon class="jp-body" points="${oct(r)}"/><polygon class="jp-ring ${cls}" points="${oct(r * 0.8)}"/>` +
+      `<polygon class="jp-body" points="${oct(r)}"/><polygon points="${oct(r - 2.6)}" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="1.6" transform="translate(-.8 -1.2)"/><polygon class="jp-ring ${cls}" points="${oct(r * 0.8)}"/>` +
       `<text class="jp-t ${cls}${J.labels === 'hangul' ? ' hg' : ''}" font-size="${fs.toFixed(0)}" text-anchor="middle" dominant-baseline="central" y="${J.labels === 'hangul' ? 2 : 1}">${label}</text></g>`;
   }
   const pieceEls = new Map();
@@ -149,6 +150,7 @@
         g._p = p;
         g.innerHTML = pieceInner(p);
         g.style.transform = `translate(${x}px, ${y}px)`;
+        if (J.deal) { g.classList.add('deal'); g.firstChild.style.animationDelay = `${(p > 0 ? 9 - ((s / 9) | 0) : ((s / 9) | 0)) * 45 + (s % 9) * 12}ms`; setTimeout(() => g.classList.remove('deal'), 1200); }
         el.pieces.appendChild(g);
         pieceEls.set(id, g);
       } else g.style.transform = `translate(${x}px, ${y}px)`;
@@ -270,7 +272,9 @@
     const aiSetup = SETUP_NAMES[(Math.random() * SETUP_NAMES.length) | 0];
     if (J.user === CHO) { J.choSetup = cfg.setup; J.hanSetup = aiSetup; } else { J.hanSetup = cfg.setup; J.choSetup = aiSetup; }
     J.moves = []; Object.assign(J, { phase: 'play', busy: false, thinking: false, hinting: false, sel: -1, targets: [], passes: 0, result: null, hints: 0, hint: null });
-    rebuild(); renderPlayers(); renderAll();
+    rebuild(); renderPlayers();
+    J.deal = true; renderAll(); J.deal = false;
+    FX.enter(el.board); FX.react(el.oppAvatar, 'happy');
     say(pick(JCHAR[J.level].greet));
     if (cfg.side === 'random') toast(J.user === CHO ? '나는 초예요. 먼저 두세요!' : '나는 한이에요. 상대가 먼저 둬요.');
     save();
@@ -282,18 +286,27 @@
     J.board[t] = J.board[f]; J.board[f] = 0; J.ids[t] = J.ids[f]; J.ids[f] = 0;
     J.moves.push(m); J.passes = 0; J.sel = -1; J.targets = []; J.hint = null;
     Sound.stone(); if (cap) setTimeout(() => Sound.capture(1), 90);
+    FX.haptic(cap ? 25 : 10);
     renderAll();
-    if (JE.kingsFacing(J.board)) { finish({ winner: 0, by: 'bikjang' }); return true; }
+    if (cap) {
+      // 잡은 기물이 잡은 쪽 점수 그릇으로 날아간다
+      const r = el.svg.getBoundingClientRect(), [vx, vy] = pos(t), size = (SIZE[Math.abs(cap)] * 2.1 / 940) * r.width;
+      const lid = (mover === J.user ? el.mePts : el.oppPts).parentElement;
+      const pts = JE.PTS[Math.abs(cap)];
+      FX.fly(`<svg viewBox="-50 -50 100 100">${pieceInner(cap)}</svg>`, r.left + (vx / 940) * r.width, r.top + (vy / 1040) * r.height, size, lid, 160, () => FX.floatText(lid, '+' + pts));
+      if (Math.abs(cap) === R) FX.stamp(el.board, '차 잡았다!', mover === J.user ? 'gold' : '');
+    }
+    if (JE.kingsFacing(J.board)) { FX.stamp(el.board, '빅장!', ''); finish({ winner: 0, by: 'bikjang' }); return true; }
     const opp = -mover;
     const legal = JE.legalMoves(J.board, opp);
     if (!legal.length) {
-      if (JE.inCheck(J.board, opp)) { finish({ winner: mover, by: 'mate' }); return true; }
+      if (JE.inCheck(J.board, opp)) { FX.stamp(el.board, '외통!', 'gold'); finish({ winner: mover, by: 'mate' }); return true; }
       // 둘 수가 없으면 자동으로 한 수 쉰다
       J.moves.push(PASS); J.passes = 1;
-      toast(`${opp === J.user ? '내가' : JCHAR[J.level].name + '가'} 둘 수 있는 수가 없어 한 수 쉬어요.`);
+      toast(`${opp === J.user ? '내가' : iga(JCHAR[J.level].name)} 둘 수 있는 수가 없어 한 수 쉬어요.`);
     }
     if (J.moves.length >= MAX_MOVES) { finishByPoints('limit'); return true; }
-    if (JE.inCheck(J.board, sideToMove())) Sound.tone([880, 1175], 0.09, 'square', 0.06);
+    if (JE.inCheck(J.board, sideToMove())) { Sound.tone([880, 1175], 0.09, 'square', 0.06); FX.stamp(el.board, '장군!', mover === CHO ? 'cho' : 'han'); }
     return false;
   }
   function finishByPoints(by) {
@@ -323,8 +336,8 @@
     save();
     if (ended) return;
     const ch = JCHAR[J.level];
-    if (JE.inCheck(J.board, J.ai)) say('앗, 장군이네요!');
-    else if (cap) say(pick(ch.capUser));
+    if (JE.inCheck(J.board, J.ai)) { say('앗, 장군이네요!'); FX.react(el.oppAvatar, 'sad'); }
+    else if (cap) { say(pick(ch.capUser)); FX.react(el.oppAvatar, 'sad'); }
     if (sideToMove() === J.ai) aiTurn(); else updateHUD();
   }
   function userPass() {
@@ -338,12 +351,14 @@
     const token = J.token, ch = JCHAR[J.level];
     const wasInCheck = JE.inCheck(J.board, J.ai);
     J.busy = true; J.thinking = true; sayThinking(); updateHUD();
+    FX.react(el.oppAvatar, 'think', true);
     await sleep(60);
-    if (token !== J.token) return;
+    if (token !== J.token) { FX.react(el.oppAvatar, 'think', false); return; }
     const t0 = performance.now();
     const r = await AIW.search(J.board, J.ai, LV[J.level]);
     const wait = 450 - (performance.now() - t0);
     if (wait > 0) await sleep(wait);
+    FX.react(el.oppAvatar, 'think', false);
     if (token !== J.token) return;
     J.busy = false; J.thinking = false;
     if (r.move === PASS || r.move == null) {
@@ -359,9 +374,9 @@
     const ended = applyMove(r.move, J.ai);
     save();
     if (ended) return;
-    if (JE.inCheck(J.board, J.user)) say(pick(ch.check));
+    if (JE.inCheck(J.board, J.user)) { say(pick(ch.check)); FX.react(el.oppAvatar, 'happy'); }
     else if (wasInCheck) say(pick(ch.escape));
-    else if (cap) say(pick(ch.capAI));
+    else if (cap) { say(pick(ch.capAI)); FX.react(el.oppAvatar, 'happy'); }
     else say(pick(ch.move));
     updateHUD();
     if (sideToMove() === J.ai) aiTurn();   // 내가 둘 수가 없어 자동으로 쉰 경우
@@ -404,7 +419,8 @@
     else if (res.by !== 'resign') say(res.winner === J.user ? pick(ch.aiLose) : pick(ch.aiWin));
     if (res.winner === J.user) Sound.win(); else if (res.winner !== 0) Sound.lose(); else Sound.pass();
     renderAll();
-    setTimeout(openResult, 350);
+    FX.react(el.oppAvatar, res.winner === 0 ? 'happy' : res.winner === J.user ? 'sad' : 'cheer');
+    setTimeout(openResult, res.by === 'mate' || res.by === 'bikjang' ? 1300 : 400);
   }
   function openResult() {
     const r = J.result; if (!r) return;
@@ -431,6 +447,9 @@
     const line = draw ? pick(ch.draw) : r.by === 'resign' && r.resigner === J.ai ? pick(ch.resign) : won ? pick(ch.aiLose) : pick(ch.aiWin);
     $('#jResultQuote').textContent = `${ch.name}: “${line}”`;
     openScrim('jResultScrim');
+    document.querySelectorAll('#jResultBody td.sum').forEach((td) => { const v = parseFloat(td.textContent); if (!isNaN(v)) FX.countUp(td, v, 800); });
+    setTimeout(() => FX.react($('#jResAvatar'), draw ? 'happy' : won ? 'sad' : 'cheer'), 120);
+    if (won && !r.shownFx) { r.shownFx = true; FX.confetti(); }
   }
 
   // ---- 설정 시트 ----
@@ -526,5 +545,10 @@
       say(pick(JCHAR[J.level].greet));
     }
   }
-  window.JanggiApp = { start, snapshot, openSetup, onShow() { if (J.phase === 'setup' && !this.shown) { this.shown = true; openSetup(); } } };
+  function summary() {
+    const rec = { w: 0, l: 0, d: 0 };
+    for (const k in stats) { rec.w += stats[k].w || 0; rec.l += stats[k].l || 0; rec.d += stats[k].d || 0; }
+    return { inProgress: J.phase === 'play', opponent: JCHAR[J.level].name, detail: `${sideName(J.user)} · ${J.moves.length}수째`, rec };
+  }
+  window.JanggiApp = { start, snapshot, openSetup, summary, onShow() { if (J.phase === 'setup' && !this.shown) { this.shown = true; openSetup(); } } };
 })();

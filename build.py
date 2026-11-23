@@ -19,6 +19,8 @@ parts = {
     '/*__META__*/': json.dumps(json.loads((SRC / 'nn' / 'kata.json').read_text()), separators=(',', ':')),
     '/*__JANGGI__*/': (SRC / 'janggi.js').read_text(encoding='utf-8'),
     '/*__JANGGI_UI__*/': (SRC / 'janggi-ui.js').read_text(encoding='utf-8'),
+    '/*__FX__*/': (SRC / 'fx.js').read_text(encoding='utf-8'),
+    '/*__HOME__*/': (SRC / 'home.js').read_text(encoding='utf-8'),
 }
 for key, value in parts.items():
     assert template.count(key) == 1, key

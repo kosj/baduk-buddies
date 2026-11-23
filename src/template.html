@@ -4,6 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Baduk Buddies</title>
+<meta name="description" content="콩이, 몽이, 돌왕, 청룡과 두는 캐주얼 바둑·장기. 설치 없이 브라우저에서 바로, 입문부터 신경망 프로 AI까지.">
+<meta name="theme-color" content="#e6eaf3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10162b" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Baduk Buddies · 캐주얼 바둑·장기">
+<meta property="og:description" content="콩이, 몽이, 돌왕, 청룡과 두는 바둑과 장기. 입문부터 신경망 프로 AI까지, 브라우저에서 바로.">
+<meta property="og:url" content="https://kosj.github.io/baduk-buddies/">
+<meta property="og:image" content="https://kosj.github.io/baduk-buddies/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22b%22%20cx%3D%2235%25%22%20cy%3D%2230%25%22%20r%3D%2275%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%237a8197%22/%3E%3Cstop%20offset%3D%22.45%22%20stop-color%3D%22%23262a35%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23090a0e%22/%3E%3C/radialGradient%3E%3CradialGradient%20id%3D%22w%22%20cx%3D%2235%25%22%20cy%3D%2230%25%22%20r%3D%2280%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23fff%22/%3E%3Cstop%20offset%3D%22.6%22%20stop-color%3D%22%23efebe2%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23c6c0b2%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle%20cx%3D%2240%22%20cy%3D%2237%22%20r%3D%2220%22%20fill%3D%22url%28%23w%29%22%20stroke%3D%22%2300000033%22/%3E%3Ccircle%20cx%3D%2224%22%20cy%3D%2226%22%20r%3D%2220%22%20fill%3D%22url%28%23b%29%22/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Baduk Buddies">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&family=Jua&display=swap" rel="stylesheet">
@@ -25,6 +40,7 @@
   --good: #157f55;
   --bad: #c43d47;
   --mark: #ff5a3c;
+  --dot: rgba(43, 82, 220, .09);
   --wood-1: #f2cd8c;
   --wood-2: #dfac62;
   --wood-3: #cc9445;
@@ -38,14 +54,14 @@
   :root:not([data-theme="light"]) {
     --bg: #10162b; --surface: #1a2240; --ink: #e9edf8; --muted: #9aa4c2; --line: #2c3659;
     --accent: #8aa4ff; --accent-deep: #5674e0; --accent-ink: #0d1430; --accent-soft: #263366;
-    --bubble: #222b4d; --btn-edge: #0b1024; --good: #4cc38f; --bad: #ff7d86;
+    --bubble: #222b4d; --btn-edge: #0b1024; --good: #4cc38f; --bad: #ff7d86; --dot: rgba(138, 164, 255, .08);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #10162b; --surface: #1a2240; --ink: #e9edf8; --muted: #9aa4c2; --line: #2c3659;
   --accent: #8aa4ff; --accent-deep: #5674e0; --accent-ink: #0d1430; --accent-soft: #263366;
-  --bubble: #222b4d; --btn-edge: #0b1024; --good: #4cc38f; --bad: #ff7d86;
+  --bubble: #222b4d; --btn-edge: #0b1024; --good: #4cc38f; --bad: #ff7d86; --dot: rgba(138, 164, 255, .08);
   color-scheme: dark;
 }
 
@@ -333,6 +349,143 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
 .seg2 { grid-template-columns: repeat(2, 1fr); }
 .seg4 label b { font-size: 15px; }
 
+
+/* ---- 한글 줄바꿈, 숨김 ---- */
+body { word-break: keep-all; overflow-wrap: break-word; }
+.btn[hidden], .icon-btn[hidden] { display: none; }
+@media (max-width: 480px) {
+  .top { gap: 8px; }
+  .top-actions { gap: 6px; }
+  .top-actions .icon-btn { width: 40px; height: 40px; }
+  #btnNew { width: 44px; padding: 0; font-size: 0; gap: 0; }
+  #btnNew svg { width: 22px; height: 22px; }
+}
+
+/* ---- 배경 무늬: 바둑판 교차점처럼 옅은 점 ---- */
+body {
+  background-color: var(--bg);
+  background-image: radial-gradient(circle at 1px 1px, var(--dot) 1.2px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* ---- 연출 ---- */
+.fx-fly { position: fixed; z-index: 70; pointer-events: none; will-change: transform; }
+.fx-fly svg, .fx-fly .fx-stone { width: 100%; height: 100%; display: block; }
+.fx-stone { border-radius: 50%; box-shadow: 0 4px 8px rgba(0, 0, 0, .3); }
+.fx-stone.b { background: radial-gradient(circle at 35% 30%, #757c92, #23262f 45%, #08090d 100%); }
+.fx-stone.w { background: radial-gradient(circle at 35% 30%, #fff, #f0ede5 58%, #c7c1b3 100%); }
+.fx-bump { animation: fxbump .45s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes fxbump { 0% { transform: scale(1); } 35% { transform: scale(1.28); } 100% { transform: scale(1); } }
+.fx-float {
+  position: fixed; z-index: 71; pointer-events: none; transform: translate(-50%, -50%);
+  font-family: var(--font-display); font-size: 22px; color: var(--good); text-shadow: 0 2px 0 var(--surface), 0 0 6px var(--surface);
+  animation: fxfloat 1.05s ease-out forwards;
+}
+.fx-float.bad { color: var(--bad); }
+@keyframes fxfloat { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.7); } 20% { opacity: 1; transform: translate(-50%, -70%) scale(1.1); } 100% { opacity: 0; transform: translate(-50%, -190%) scale(1); } }
+.fx-stamp {
+  position: absolute; left: 50%; top: 46%; z-index: 6; pointer-events: none; white-space: nowrap;
+  font-family: var(--font-display); font-size: clamp(38px, 11vw, 78px); line-height: 1; color: #fff;
+  padding: .16em .5em .12em; border-radius: .28em; border: 4px solid rgba(255, 255, 255, .85);
+  background: var(--accent); box-shadow: 0 7px 0 var(--accent-deep), 0 18px 40px rgba(10, 16, 40, .35);
+  transform: translate(-50%, -50%) rotate(-7deg); animation: fxstamp 1.45s cubic-bezier(.2, .9, .3, 1) forwards;
+}
+.fx-stamp.cho { background: #13784b; box-shadow: 0 7px 0 #0a4a2e, 0 18px 40px rgba(10, 16, 40, .35); }
+.fx-stamp.han { background: #c9303a; box-shadow: 0 7px 0 #7d1820, 0 18px 40px rgba(10, 16, 40, .35); }
+.fx-stamp.gold { background: #f1a91b; color: #3d2600; box-shadow: 0 7px 0 #a86f00, 0 18px 40px rgba(10, 16, 40, .35); }
+.fx-stamp.small { font-size: clamp(28px, 7vw, 46px); }
+@keyframes fxstamp {
+  0% { opacity: 0; transform: translate(-50%, -50%) rotate(-7deg) scale(2.3); }
+  13% { opacity: 1; transform: translate(-50%, -50%) rotate(-7deg) scale(.9); }
+  21% { transform: translate(-50%, -50%) rotate(-7deg) scale(1.05); }
+  28%, 78% { opacity: 1; transform: translate(-50%, -50%) rotate(-7deg) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -62%) rotate(-7deg) scale(1); }
+}
+.fx-ripple { fill: none; stroke: rgba(255, 255, 255, .9); stroke-width: 3; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; animation: fxripple .6s ease-out forwards; }
+@keyframes fxripple { 0% { opacity: .9; transform: scale(.9); } 100% { opacity: 0; transform: scale(1.9); } }
+.fx-confetti { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 90; pointer-events: none; }
+.fx-enter { animation: fxenter .32s ease-out; }
+@keyframes fxenter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* 캐릭터 반응 */
+.avatar svg { transform-origin: 50% 92%; }
+.avatar.r-think svg { animation: rthink 1.6s ease-in-out infinite; }
+.avatar.r-happy svg { animation: rhappy .8s cubic-bezier(.3, 1.4, .5, 1); }
+.avatar.r-cheer svg { animation: rhappy .8s cubic-bezier(.3, 1.4, .5, 1) 3; }
+.avatar.r-sad svg { animation: rsad .8s ease-in-out; }
+@keyframes rthink { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg) translateY(-2px); } }
+@keyframes rhappy { 0% { transform: none; } 30% { transform: translateY(-22%) scale(1.06, .96); } 55% { transform: translateY(0) scale(1.08, .9); } 75% { transform: translateY(-6%); } 100% { transform: none; } }
+@keyframes rsad { 0%, 100% { transform: none; } 15% { transform: translateX(-7%) rotate(-8deg); } 35% { transform: translateX(6%) rotate(6deg); } 55% { transform: translateX(-4%) rotate(-4deg); } 75% { transform: translateY(4%) scale(1, .95); } }
+
+/* ---- 헤더 ---- */
+.brand { text-decoration: none; color: inherit; border-radius: 12px; }
+.brand:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+body[data-view="home"] .gametabs, body[data-view="home"] #btnNew { display: none; }
+.icon-btn.help { font-family: var(--font-display); font-size: 22px; }
+
+/* ---- 홈 ---- */
+.home { display: flex; flex-direction: column; gap: 18px; align-items: center; padding-top: 4px; }
+.home[hidden] { display: none; }
+.hero { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; width: 100%; }
+.cast { display: flex; justify-content: center; gap: clamp(6px, 3vw, 22px); flex-wrap: nowrap; margin-top: 6px; }
+.cast button { background: none; border: 0; padding: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; position: relative; color: var(--ink); }
+.cast .avatar { width: clamp(58px, 17vw, 84px); height: clamp(58px, 17vw, 84px); }
+.cast .avatar svg { animation: bob 2.6s ease-in-out infinite; }
+.cast button:nth-child(2) .avatar svg { animation-delay: -.6s; }
+.cast button:nth-child(3) .avatar svg { animation-delay: -1.2s; }
+.cast button:nth-child(4) .avatar svg { animation-delay: -1.8s; }
+.cast .avatar.r-happy svg { animation: rhappy .8s cubic-bezier(.3, 1.4, .5, 1); }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5%); } }
+.cast .nm { font-family: var(--font-display); font-size: 15px; }
+.cast .lv { font-size: 11px; color: var(--muted); }
+.cast .say {
+  position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); white-space: nowrap;
+  background: var(--bubble); color: var(--ink); font-size: 13px; padding: 5px 10px; border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(10, 16, 40, .15); animation: fxenter .25s ease-out; pointer-events: none;
+}
+.hero-title { font-family: var(--font-display); font-size: clamp(28px, 8vw, 44px); line-height: 1.1; margin-top: 6px; }
+.hero-sub { margin: 0; color: var(--muted); max-width: 34ch; }
+.gamecards { display: grid; grid-template-columns: 1fr; gap: 14px; width: min(100%, 880px); }
+@media (min-width: 720px) { .gamecards { grid-template-columns: 1fr 1fr; } }
+.gcard {
+  display: grid; grid-template-columns: 112px 1fr; gap: 14px; align-items: center; padding: 14px; border-radius: 22px;
+  background: var(--surface); border: 2px solid var(--line); box-shadow: 0 6px 0 var(--line);
+}
+@media (min-width: 720px) { .gcard { grid-template-columns: 1fr; padding: 18px; } .gcard-art { max-width: 220px; margin: 0 auto; } }
+.gcard-art svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 6px 0 var(--wood-edge)); }
+.gcard h3 { font-family: var(--font-display); font-size: 26px; line-height: 1.1; }
+.gcard p { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+.gcard .rec { font-size: 13px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.gcard .prog { font-size: 13px; color: var(--accent); font-weight: 600; }
+.gcard-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.gcard-actions .btn { min-height: 44px; font-size: 16px; }
+.home .credit { text-align: center; max-width: 60ch; }
+
+/* ---- 게임 방법 ---- */
+.help-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.help-body { display: flex; flex-direction: column; gap: 14px; }
+.hsec { display: grid; grid-template-columns: 92px 1fr; gap: 12px; align-items: center; }
+.hsec svg { width: 92px; height: auto; display: block; border-radius: 8px; }
+.hsec h3 { font-family: var(--font-display); font-size: 18px; margin-bottom: 2px; }
+.hsec p { margin: 0; font-size: 14px; color: var(--muted); }
+.pgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 520px) { .pgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.pcell { display: flex; flex-direction: column; gap: 4px; padding: 8px; border-radius: 14px; border: 2px solid var(--line); }
+.pcell svg { width: 100%; height: auto; display: block; border-radius: 6px; }
+.pcell b { font-family: var(--font-display); font-weight: 400; font-size: 16px; }
+.pcell span { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.mini-dot { fill: var(--accent); }
+.mini-x { stroke: #e0483c; stroke-width: 3; }
+
+/* ---- 기물·돌 다듬기 ---- */
+.jp-hi { fill: rgba(255, 255, 255, .55); }
+.jp:hover .jp-in { transform: translateY(-3%); }
+.jp.deal .jp-in { animation: deal .42s cubic-bezier(.2, .9, .3, 1.2) both; }
+@keyframes deal { from { opacity: 0; transform: translateY(-40%) scale(1.25); } to { opacity: 1; transform: none; } }
+.board.fx-enter { animation: boardin .45s cubic-bezier(.2, .9, .3, 1.15); }
+@keyframes boardin { from { opacity: 0; transform: scale(.94) translateY(8px); } to { opacity: 1; transform: none; } }
+.lid-dish { transform-origin: center; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
@@ -341,7 +494,7 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand">
+    <a class="brand" href="#home" aria-label="Baduk Buddies 홈으로">
       <svg viewBox="0 0 40 40" aria-hidden="true">
         <defs>
           <radialGradient id="lgB" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#727a92"/><stop offset=".45" stop-color="#262a35"/><stop offset="1" stop-color="#090a0e"/></radialGradient>
@@ -351,10 +504,11 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
         <circle cx="15" cy="16" r="12" fill="url(#lgB)"/>
       </svg>
       <h1>Baduk Buddies</h1>
-    </div>
+    </a>
     <div class="top-actions">
+      <button class="icon-btn help" id="btnHelp" type="button" aria-label="게임 방법">?</button>
       <button class="icon-btn" id="btnSound" type="button" aria-label="소리 끄기"></button>
-      <button class="btn slim" id="btnNew" type="button">
+      <button class="btn slim" id="btnNew" type="button" aria-label="새 게임">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>새 게임
       </button>
     </div>
@@ -368,6 +522,44 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
       <svg viewBox="0 0 40 40" aria-hidden="true"><polygon points="13,3 27,3 37,13 37,27 27,37 13,37 3,27 3,13" fill="#f6e9cc" stroke="#b08a4f" stroke-width="2"/><text x="20" y="21" text-anchor="middle" dominant-baseline="central" font-size="19" font-family="Noto Serif KR, serif" font-weight="700" fill="#c3262e">將</text></svg>장기
     </button>
   </nav>
+
+
+  <main class="home" id="view-home" role="tabpanel" aria-label="홈" hidden>
+    <section class="hero">
+      <div class="cast" id="homeCast"></div>
+      <h2 class="hero-title">오늘은 누구랑 한 판?</h2>
+      <p class="hero-sub">바둑 친구들과 바둑도 장기도 두어 보세요. 입문부터 프로까지 실력에 맞는 상대가 있어요.</p>
+    </section>
+    <div class="gamecards">
+      <article class="gcard" aria-labelledby="hcB">
+        <div class="gcard-art" id="artBaduk"></div>
+        <div>
+          <h3 id="hcB">바둑</h3>
+          <p>9×9 빠른 한 판부터 19×19 정식 대국까지. 신경망 프로 AI 청룡도 기다려요.</p>
+          <p class="prog" id="progBaduk" hidden></p>
+          <p class="rec" id="recBaduk"></p>
+          <div class="gcard-actions">
+            <button class="btn primary" id="homeBadukGo" type="button">시작하기</button>
+            <button class="btn" id="homeBadukNew" type="button" hidden>새 게임</button>
+          </div>
+        </div>
+      </article>
+      <article class="gcard" aria-labelledby="hcJ">
+        <div class="gcard-art" id="artJanggi"></div>
+        <div>
+          <h3 id="hcJ">장기</h3>
+          <p>상차림 4가지, 한자·한글 기물. 장군을 부르고 외통으로 끝내 보세요.</p>
+          <p class="prog" id="progJanggi" hidden></p>
+          <p class="rec" id="recJanggi"></p>
+          <div class="gcard-actions">
+            <button class="btn primary" id="homeJanggiGo" type="button">시작하기</button>
+            <button class="btn" id="homeJanggiNew" type="button" hidden>새 게임</button>
+          </div>
+        </div>
+      </article>
+    </div>
+    <p class="credit">프로 AI(청룡)는 KataGo의 공개 신경망(© David J Wu, MIT 라이선스)으로 둬요. 기록은 이 브라우저에만 저장돼요.</p>
+  </main>
 
   <main class="stage" id="view-baduk" role="tabpanel" aria-labelledby="tab-baduk">
     <section class="board-col" aria-label="대국">
@@ -388,6 +580,7 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
           <defs>
             <radialGradient id="gB" cx="36%" cy="30%" r="72%"><stop offset="0" stop-color="#6f768c"/><stop offset=".38" stop-color="#282b36"/><stop offset="1" stop-color="#08090d"/></radialGradient>
             <radialGradient id="gW" cx="36%" cy="30%" r="78%"><stop offset="0" stop-color="#ffffff"/><stop offset=".58" stop-color="#f1eee6"/><stop offset="1" stop-color="#c7c1b3"/></radialGradient>
+            <linearGradient id="gWs" x1="0" y1="0" x2="0.05" y2="0.11" spreadMethod="repeat"><stop offset="0" stop-color="#8a7f66" stop-opacity="0"/><stop offset=".5" stop-color="#8a7f66" stop-opacity=".1"/><stop offset="1" stop-color="#8a7f66" stop-opacity="0"/></linearGradient>
           </defs>
           <g id="gGrid"></g>
           <g id="gStones"></g>
@@ -626,6 +819,21 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
   </div>
 </div>
 
+<!-- 게임 방법 -->
+<div class="scrim" id="helpScrim">
+  <div class="sheet" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="sheet-head">
+      <h2 id="helpTitle">게임 방법</h2>
+      <button class="icon-btn" id="helpClose" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="seg help-tabs" role="tablist" aria-label="게임 고르기">
+      <input class="sr" type="radio" name="helpg" id="helpB" value="baduk"><label for="helpB"><b>바둑</b></label>
+      <input class="sr" type="radio" name="helpg" id="helpJ" value="janggi"><label for="helpJ"><b>장기</b></label>
+    </div>
+    <div class="help-body" id="helpBody"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status"></div>
 
 <script id="engine-src">
@@ -638,6 +846,9 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
 /*__PRO__*/
 const NN_WASM_B64 = '/*__WASM__*/';
 const NN_META = /*__META__*/;
+</script>
+<script>
+/*__FX__*/
 </script>
 <script>
 (() => {
@@ -1041,7 +1252,7 @@ self.onmessage = async (e) => {
     el.gFx.innerHTML = '';
   }
   function stoneEl(x, y, v, cls, dead) {
-    return `<g transform="translate(${x} ${y})"${dead ? ' class="dead"' : ''}><g${cls ? ` class="${cls}"` : ''}><circle class="sh" cx="5" cy="7" r="46"/><circle r="46" fill="url(#${v === BLACK ? 'gB' : 'gW'})"${v === WHITE ? ' class="wst"' : ''}/></g></g>`;
+    return `<g transform="translate(${x} ${y})"${dead ? ' class="dead"' : ''}><g${cls ? ` class="${cls}"` : ''}><circle class="sh" cx="5" cy="7" r="46"/><circle r="46" fill="url(#${v === BLACK ? 'gB' : 'gW'})"${v === WHITE ? ' class="wst"' : ''}/>${v === WHITE ? '<circle r="44" fill="url(#gWs)"/>' : ''}</g></g>`;
   }
   function renderStones(newP) {
     const b = G.board, n = G.size, showDead = G.phase !== 'play' && G.dead;
@@ -1195,6 +1406,7 @@ self.onmessage = async (e) => {
     if (G.level === 3) NNPool.load();
     Object.assign(G, { phase: 'play', busy: false, thinking: false, hinting: false, dead: null, score: null, hint: -1, pending: -1, hover: -1, cursor: -1, hints: 0, result: null });
     setupGrid(); renderPlayers(); renderAll();
+    FX.enter(el.board); FX.react(el.oppAvatar, 'happy');
     say(pick(CHAR[G.level].greet));
     if (cfg.color === 'random') toast(G.user === BLACK ? '나는 흑이에요. 먼저 두세요!' : '나는 백이에요. 상대가 먼저 둬요.');
     save();
@@ -1209,6 +1421,16 @@ self.onmessage = async (e) => {
     if (k) for (let i = 0; i < b.len; i++) if (before[i] === 3 - col && b.c[i] === EMPTY) caps.push({ p: i, v: 3 - col });
     renderAll(p); captureFx(caps);
     Sound.stone(); if (k) setTimeout(() => Sound.capture(k), 110);
+    FX.ripple(el.gFx, px(p), py(p), 46); FX.haptic(k ? 25 : 10);
+    if (k) {
+      // 따낸 돌이 잡은 쪽 그릇으로 날아간다
+      const r = el.svg.getBoundingClientRect(), V = vbSize(), size = (92 / V) * r.width;
+      const lid = (col === G.user ? el.meCaps : el.oppCaps).parentElement;
+      caps.slice(0, 16).forEach(({ p: q, v }, i) => {
+        FX.fly(`<div class="fx-stone ${v === BLACK ? 'b' : 'w'}"></div>`, r.left + (px(q) / V) * r.width, r.top + (py(q) / V) * r.height, size, lid, 120 + i * 45, i === 0 ? () => FX.floatText(lid, '+' + k) : null);
+      });
+      if (k >= 3) FX.stamp(el.board, `${k}점 따냄!`, col === G.user ? 'gold' : '');
+    }
     return k;
   }
 
@@ -1238,7 +1460,7 @@ self.onmessage = async (e) => {
   }
   function userMove(p) {
     const k = applyMove(p, G.user);
-    if (k) say(pick(CHAR[G.level].capUser));
+    if (k) { say(pick(CHAR[G.level].capUser)); FX.react(el.oppAvatar, 'sad'); }
     save();
     aiTurn(false);
   }
@@ -1283,8 +1505,9 @@ self.onmessage = async (e) => {
     const token = G.token, ch = CHAR[G.level];
     G.busy = true; G.thinking = true; G.pending = -1;
     sayThinking(); renderMarks(); updateHUD();
+    FX.react(el.oppAvatar, 'think', true);
     await sleep(40);
-    if (token !== G.token) return;
+    if (token !== G.token) { FX.react(el.oppAvatar, 'think', false); return; }
     const t0 = performance.now();
     let d;
     try { d = G.level === 3 ? await proDecide(userPassed, token) : await decideAI(G.board, G.level, userPassed, () => token !== G.token, poolSearch); }
@@ -1292,6 +1515,7 @@ self.onmessage = async (e) => {
     if (d.cancelled) return;
     const wait = 520 - (performance.now() - t0);
     if (wait > 0) await sleep(wait);
+    FX.react(el.oppAvatar, 'think', false);
     if (token !== G.token) return;
     G.busy = false; G.thinking = false;
     if (d.sims) G.lastSims = d.sims;
@@ -1304,11 +1528,12 @@ self.onmessage = async (e) => {
       G.board.pass(); G.moves.push(PASS); Sound.pass();
       say(pick(ch.pass));
       if (G.board.passes >= 2) { startScoring(); return; }
+      FX.stamp(el.board, `${ch.name} 패스`, 'small');
       renderAll(); save();
       return;
     }
     const k = applyMove(d.move, G.ai);
-    if (k) say(pick(ch.capAI));
+    if (k) { say(pick(ch.capAI)); FX.react(el.oppAvatar, 'happy'); }
     else if (userPassed) say(pick(ch.keepGoing));
     else say(pick(ch.move));
     save();
@@ -1319,6 +1544,7 @@ self.onmessage = async (e) => {
     G.phase = 'scoring'; G.busy = true; G.thinking = false; G.hinting = false; G.hint = -1; G.pending = -1;
     G.dead = null; G.score = null;
     renderAll();
+    FX.stamp(el.board, '대국 끝! 계가해요', 'small');
     const n = G.size;
     let own = null;
     if (NNPool.state === 'ready') { try { own = await ProAI.ownership(n, G.moves.slice(), KOMI); } catch (e) { own = null; } }
@@ -1377,6 +1603,10 @@ self.onmessage = async (e) => {
     $('#resultBody').innerHTML = body + `<p class="result-sub" style="margin:10px 0 0">${ch.name} 상대 전적 ${rec.w}승 ${rec.l}패${G.hints ? ` · 이번 판 힌트 ${G.hints}번` : ''}</p>`;
     const line = r.by === 'resign' && r.resigner === G.ai ? pick(ch.resign) : won ? pick(ch.aiLose) : pick(ch.aiWin);
     $('#resultQuote').textContent = `${ch.name}: “${line}”`;
+    document.querySelectorAll('#resultBody td.sum').forEach((td) => { const v = parseFloat(td.textContent); if (!isNaN(v)) FX.countUp(td, v, 800, fmt); });
+    setTimeout(() => FX.react($('#resAvatar'), won ? 'sad' : 'cheer'), 120);
+    if (won && !r.shownFx) { r.shownFx = true; FX.confetti(); }
+    FX.react(el.oppAvatar, won ? 'sad' : 'cheer');
     openScrim('resultScrim');
   }
 
@@ -1585,9 +1815,15 @@ self.onmessage = async (e) => {
       say(pick(CHAR[G.level].greet));
     }
   }
-  window.Buddies = { Sound, toast, store, avatarSVG, openScrim, closeScrim, iga, pick, sleep };
+  window.Buddies = { Sound, toast, store, avatarSVG, openScrim, closeScrim, iga, pick, sleep, CHAR };
   window.BadukApp = {
     start, snapshot, openSetup,
+    summary() {
+      const inProgress = G.phase === 'play' || G.phase === 'scoring';
+      const rec = { w: 0, l: 0, d: 0 };
+      for (const k in stats) { rec.w += stats[k].w || 0; rec.l += stats[k].l || 0; }
+      return { inProgress, opponent: CHAR[G.level].name, detail: `${G.size}×${G.size} · ${G.board.moveNum}수째`, rec };
+    },
     onShow() { if (G.phase === 'setup' && !this.shown) { this.shown = true; openSetup(); } }
   };
 })();
@@ -1599,24 +1835,29 @@ self.onmessage = async (e) => {
 /*__JANGGI_UI__*/
 </script>
 <script>
-// ---- 게임 고르기(바둑/장기)와 시작 ----
+/*__HOME__*/
+</script>
+<script>
+// ---- 화면 전환(홈/바둑/장기)과 시작 ----
 (() => {
-  const VIEWS = ['baduk', 'janggi'];
-  const apps = { baduk: window.BadukApp, janggi: window.JanggiApp };
+  const VIEWS = ['home', 'baduk', 'janggi'];
+  const apps = { home: window.HomeApp, baduk: window.BadukApp, janggi: window.JanggiApp };
   const Router = {
-    view: 'baduk',
+    view: null,
     show(v, quiet) {
-      if (!VIEWS.includes(v)) v = 'baduk';
+      if (!VIEWS.includes(v)) v = 'home';
+      const changed = this.view !== v;
       this.view = v;
-      for (const name of VIEWS) {
-        document.getElementById('view-' + name).hidden = name !== v;
+      for (const name of VIEWS) document.getElementById('view-' + name).hidden = name !== v;
+      for (const name of ['baduk', 'janggi']) {
         const t = document.getElementById('tab-' + name);
         t.setAttribute('aria-selected', String(name === v));
         t.tabIndex = name === v ? 0 : -1;
       }
-      try { localStorage.setItem('buddies-view', v); } catch (e) { /* 무시 */ }
+      document.body.dataset.view = v;
       if (location.hash !== '#' + v) { try { history.replaceState(null, '', '#' + v); } catch (e) { /* 무시 */ } }
       if (!quiet) window.scrollTo(0, 0);
+      if (changed) window.FX.enter(document.getElementById('view-' + v));
       if (apps[v] && apps[v].onShow) apps[v].onShow();
     }
   };
@@ -1628,15 +1869,16 @@ self.onmessage = async (e) => {
     Router.show(next); document.getElementById('tab-' + next).focus();
   });
   window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (VIEWS.includes(h) && h !== Router.view) Router.show(h); });
-  document.getElementById('btnNew').addEventListener('click', () => apps[Router.view].openSetup());
+  document.querySelector('.brand').addEventListener('click', (e) => { e.preventDefault(); Router.show('home'); });
+  document.getElementById('btnNew').addEventListener('click', () => apps[Router.view].openSetup && apps[Router.view].openSetup());
   const boot = (data) => {
     data = data || {};
     apps.baduk.start(data.baduk || {});
     apps.janggi.start(data.janggi || {});
+    apps.home.start();
     const h = location.hash.slice(1);
-    let v = VIEWS.includes(h) ? h : data.view;
-    if (!VIEWS.includes(v)) { try { v = localStorage.getItem('buddies-view'); } catch (e) { v = null; } }
-    Router.show(VIEWS.includes(v) ? v : 'baduk', true);
+    const v = VIEWS.includes(h) ? h : VIEWS.includes(data.view) ? data.view : 'home';
+    Router.show(v, true);
   };
   const hot = window.claude && window.claude.hot;
   if (hot && hot.snapshot) { try { hot.snapshot(() => ({ baduk: apps.baduk.snapshot(), janggi: apps.janggi.snapshot(), view: Router.view })); } catch (e) { /* 무시 */ } }
