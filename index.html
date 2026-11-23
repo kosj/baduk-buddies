@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>바둑 한 판</title>
+<title>Baduk Buddies</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&family=Jua&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&text=%E6%A5%9A%E6%BC%A2%E8%BB%8A%E5%8C%85%E9%A6%AC%E8%B1%A1%E5%A3%AB%E5%8D%92%E5%85%B5%E5%B0%87&display=swap" rel="stylesheet">
 <style>
 :root {
   /* 레이아웃: 휴대폰은 한 줄(상대 → 판 → 나 → 버튼), 900px 이상은 판 + 오른쪽 패널. 대담함은 나무판 한 곳에만. */
@@ -75,7 +76,8 @@ h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 400; }
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .brand { display: flex; align-items: center; gap: 10px; }
 .brand svg { width: 34px; height: 34px; flex: none; }
-.brand h1 { font-family: var(--font-display); font-size: 26px; letter-spacing: -0.5px; line-height: 1; }
+.brand h1 { font-family: var(--font-display); font-size: clamp(19px, 5.4vw, 26px); letter-spacing: -0.5px; line-height: 1; white-space: nowrap; }
+.brand { min-width: 0; }
 .top-actions { display: flex; gap: 8px; align-items: center; }
 
 .icon-btn {
@@ -221,9 +223,9 @@ h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 400; }
 .actions.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .actions[hidden] { display: none; }
 @media (max-width: 899px) {
-  #actPlay .btn { flex-direction: column; gap: 2px; padding: 6px 4px; min-height: 60px; font-size: 15px; }
+  #actPlay .btn, #jActPlay .btn { flex-direction: column; gap: 2px; padding: 6px 4px; min-height: 60px; font-size: 15px; }
 }
-@media (min-width: 900px) { #actPlay { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 900px) { #actPlay, #jActPlay { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .scorecard { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 10px; align-items: center; font-variant-numeric: tabular-nums; font-size: 14px; }
 .scorecard[hidden] { display: none; }
 .scorecard .tot { font-family: var(--font-display); font-size: 20px; text-align: right; }
@@ -289,6 +291,48 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+
+/* 게임 탭 */
+.gametabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: min(100%, 420px); margin: 0 auto; }
+.gtab {
+  font-family: var(--font-display); font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 46px; border-radius: 14px; border: 2px solid var(--btn-edge); background: var(--surface); color: var(--ink);
+  box-shadow: 0 3px 0 var(--btn-edge); cursor: pointer; touch-action: manipulation;
+}
+.gtab svg { width: 24px; height: 24px; }
+.gtab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent-deep); box-shadow: 0 3px 0 var(--accent-deep); }
+.gtab:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.stage[hidden] { display: none; }
+
+/* 장기 */
+.jcol { width: min(100%, 560px, max(280px, calc((100vh - 330px) * 0.9))); width: min(100%, 560px, max(280px, calc((100dvh - 330px) * 0.9))); }
+@media (min-width: 900px) { .jcol { width: min(560px, max(340px, calc((100vh - 310px) * 0.9))); width: min(560px, max(340px, calc((100dvh - 310px) * 0.9))); } }
+.board.jboard { aspect-ratio: 940 / 1040; }
+.spot { fill: none; stroke: var(--grid); stroke-width: 1.4; vector-effect: non-scaling-stroke; opacity: .7; }
+.jp { transition: transform .24s cubic-bezier(.2, .8, .3, 1); cursor: pointer; }
+.jp-in { transform-box: fill-box; transform-origin: center; transition: transform .15s; }
+.jp.sel .jp-in { transform: scale(1.1) translateY(-3%); }
+.jp-sh { fill: rgba(60, 30, 0, .32); }
+.jp-body { fill: url(#jgBody); stroke: #9c7339; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+.jp-ring { fill: none; stroke-width: 1.4; vector-effect: non-scaling-stroke; opacity: .55; }
+.jp-ring.cho, .jp-t.cho { stroke: #12744a; }
+.jp-ring.han, .jp-t.han { stroke: #c3262e; }
+.jp-t { font-family: "Noto Serif KR", "Nanum Myeongjo", "AppleMyungjo", serif; font-weight: 700; stroke: none !important; pointer-events: none; }
+.jp-t.cho { fill: #12744a; } .jp-t.han { fill: #c3262e; }
+.jp-t.hg { font-family: var(--font-display); font-weight: 400; }
+.jpop { animation: jpop .4s ease-in forwards; }
+@keyframes jpop { to { opacity: 0; } }
+.jtdot { fill: var(--accent); opacity: .8; pointer-events: none; }
+.jtcap { fill: none; stroke: #e0483c; stroke-width: 3.5; vector-effect: non-scaling-stroke; pointer-events: none; }
+.jfrom { fill: rgba(43, 82, 220, .35); }
+.jto { fill: rgba(255, 214, 90, .45); }
+.jcheck { fill: rgba(224, 52, 52, .22); stroke: #e03434; stroke-width: 3; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; animation: pulse 1s ease-in-out infinite; }
+.side-chip { font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px; line-height: 1.4; color: #fff; }
+.side-chip.cho { background: #12744a; } .side-chip.han { background: #c3262e; }
+.seg4 { grid-template-columns: repeat(4, 1fr); }
+.seg2 { grid-template-columns: repeat(2, 1fr); }
+.seg4 label b { font-size: 15px; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
@@ -306,7 +350,7 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
         <circle cx="25" cy="23" r="12" fill="url(#lgW)" stroke="rgba(0,0,0,.2)"/>
         <circle cx="15" cy="16" r="12" fill="url(#lgB)"/>
       </svg>
-      <h1>바둑 한 판</h1>
+      <h1>Baduk Buddies</h1>
     </div>
     <div class="top-actions">
       <button class="icon-btn" id="btnSound" type="button" aria-label="소리 끄기"></button>
@@ -316,7 +360,16 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
     </div>
   </header>
 
-  <main class="stage">
+  <nav class="gametabs" role="tablist" aria-label="게임 고르기">
+    <button class="gtab" role="tab" id="tab-baduk" data-view="baduk" aria-selected="true" aria-controls="view-baduk" type="button">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="24" cy="22" r="11" fill="#f3efe6" stroke="rgba(0,0,0,.25)"/><circle cx="15" cy="16" r="11" fill="#22252f"/></svg>바둑
+    </button>
+    <button class="gtab" role="tab" id="tab-janggi" data-view="janggi" aria-selected="false" aria-controls="view-janggi" type="button">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><polygon points="13,3 27,3 37,13 37,27 27,37 13,37 3,27 3,13" fill="#f6e9cc" stroke="#b08a4f" stroke-width="2"/><text x="20" y="21" text-anchor="middle" dominant-baseline="central" font-size="19" font-family="Noto Serif KR, serif" font-weight="700" fill="#c3262e">將</text></svg>장기
+    </button>
+  </nav>
+
+  <main class="stage" id="view-baduk" role="tabpanel" aria-labelledby="tab-baduk">
     <section class="board-col" aria-label="대국">
       <div class="pbar" id="oppBar">
         <div class="avatar" id="oppAvatar"></div>
@@ -378,6 +431,61 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
         <button class="btn" id="btnShowResult" type="button">결과 다시 보기</button>
       </div>
       <p class="tip" id="tip">돌을 놓을 자리를 탭하세요. 상대 돌을 둘러싸면 따낼 수 있어요.</p>
+    </aside>
+  </main>
+
+  <main class="stage" id="view-janggi" role="tabpanel" aria-labelledby="tab-janggi" hidden>
+    <section class="board-col jcol" aria-label="장기 대국">
+      <div class="pbar" id="jOppBar">
+        <div class="avatar" id="jOppAvatar"></div>
+        <div class="pinfo">
+          <div class="pname"><span id="jOppName">몽이</span><span class="lvchip lv1" id="jOppLv">중</span><span class="side-chip han" id="jOppSide">한</span><span class="turn-pill">차례</span></div>
+          <div class="bubble" id="jOppBubble" aria-live="polite">장기 한 판 해요!</div>
+        </div>
+        <div class="lid" title="상대가 잡은 기물 점수">
+          <div class="lid-dish"><span id="jOppPts">0</span></div>
+          <span class="lid-label">잡은 점수</span>
+        </div>
+      </div>
+      <div class="board jboard" id="jBoard">
+        <svg id="jSvg" viewBox="0 0 940 1040" aria-label="장기판. 기물을 탭하면 갈 수 있는 곳이 보여요.">
+          <defs>
+            <radialGradient id="jgBody" cx="38%" cy="30%" r="80%"><stop offset="0" stop-color="#fffaf0"/><stop offset=".6" stop-color="#f3e3bf"/><stop offset="1" stop-color="#dcc08a"/></radialGradient>
+          </defs>
+          <g id="jGrid"></g>
+          <g id="jMarks"></g>
+          <g id="jPieces"></g>
+          <g id="jTargets"></g>
+        </svg>
+      </div>
+      <div class="pbar" id="jMeBar">
+        <div class="me-stone" id="jMeIcon"></div>
+        <div class="pinfo">
+          <div class="pname"><span>나</span><span class="side-chip cho" id="jMeSide">초</span><span class="turn-pill">차례</span></div>
+          <div class="me-sub" id="jMeSub">초 · 내가 먼저 둬요</div>
+        </div>
+        <div class="lid" title="내가 잡은 기물 점수">
+          <div class="lid-dish"><span id="jMePts">0</span></div>
+          <span class="lid-label">잡은 점수</span>
+        </div>
+      </div>
+    </section>
+    <aside class="side">
+      <div>
+        <div class="status" id="jStatus" aria-live="polite">새 게임을 골라 주세요</div>
+        <div class="meta" id="jMeta"></div>
+      </div>
+      <div class="actions" id="jActPlay">
+        <button class="btn" id="jBtnUndo" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>무르기</button>
+        <button class="btn" id="jBtnHint" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21.5h4"/><path d="M12 2.5a6.5 6.5 0 0 0-3.8 11.8c.6.5.9 1.1.9 1.8V16h5.8v-.1c0-.7.3-1.3.9-1.8A6.5 6.5 0 0 0 12 2.5z"/></svg>힌트</button>
+        <button class="btn" id="jBtnPass" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5v13l9-6.5z"/><path d="M18.5 5.5v13"/></svg>한수쉼</button>
+        <button class="btn" id="jBtnResign" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 21V3.5"/><path d="M5.5 4h12l-2.5 4.5L17.5 13h-12"/></svg>기권</button>
+      </div>
+      <div class="actions two" id="jActOver" hidden>
+        <button class="btn primary" id="jBtnAgain" type="button">한 판 더</button>
+        <button class="btn" id="jBtnShowResult" type="button">결과 다시 보기</button>
+      </div>
+      <p class="tip" id="jTip"></p>
     </aside>
   </main>
 </div>
@@ -442,6 +550,78 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
     <div class="row-btns">
       <button class="btn" id="confirmNo" type="button">계속 둘래요</button>
       <button class="btn primary" id="confirmYes" type="button">기권하기</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 장기: 새 게임 -->
+<div class="scrim" id="jSetupScrim">
+  <div class="sheet" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="jSetupTitle">
+    <div class="sheet-head">
+      <h2 id="jSetupTitle">장기, 누구랑 둘까요?</h2>
+      <button class="icon-btn" id="jSetupClose" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="opps" id="jOppList" role="radiogroup" aria-label="상대 고르기"></div>
+    <div class="field">
+      <div class="flabel" id="jlblSide">내 진영</div>
+      <div class="seg" role="radiogroup" aria-labelledby="jlblSide">
+        <input class="sr" type="radio" name="jside" id="jsideC" value="cho"><label for="jsideC"><b>초</b><small>내가 먼저</small></label>
+        <input class="sr" type="radio" name="jside" id="jsideH" value="han"><label for="jsideH"><b>한</b><small>덤 1.5 받기</small></label>
+        <input class="sr" type="radio" name="jside" id="jsideR" value="random"><label for="jsideR"><b>무작위</b><small>운에 맡기기</small></label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="flabel" id="jlblSetup">내 상차림 <small style="font-family:var(--font-body);font-size:12px;color:var(--muted)">(내 쪽에서 본 왼쪽부터)</small></div>
+      <div class="seg seg4" role="radiogroup" aria-labelledby="jlblSetup">
+        <input class="sr" type="radio" name="jsetup" id="jsu1" value="마상상마"><label for="jsu1"><b>마상상마</b></label>
+        <input class="sr" type="radio" name="jsetup" id="jsu2" value="상마마상"><label for="jsu2"><b>상마마상</b></label>
+        <input class="sr" type="radio" name="jsetup" id="jsu3" value="마상마상"><label for="jsu3"><b>마상마상</b></label>
+        <input class="sr" type="radio" name="jsetup" id="jsu4" value="상마상마"><label for="jsu4"><b>상마상마</b></label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="flabel" id="jlblLabels">기물 글자</div>
+      <div class="seg seg2" role="radiogroup" aria-labelledby="jlblLabels">
+        <input class="sr" type="radio" name="jlabels" id="jlbH" value="hanja"><label for="jlbH"><b>車 한자</b><small>진짜 장기처럼</small></label>
+        <input class="sr" type="radio" name="jlabels" id="jlbK" value="hangul"><label for="jlbK"><b>차 한글</b><small>처음이라면</small></label>
+      </div>
+    </div>
+    <button class="btn primary big" id="jBtnStart" type="button">대국 시작</button>
+    <p class="fine">상대 궁을 외통으로 몰면 이겨요. 궁끼리 마주 보면(빅장) 비기고, 200수가 넘으면 남은 기물 점수로 가려요(한 +1.5).</p>
+  </div>
+</div>
+
+<!-- 장기: 결과 -->
+<div class="scrim" id="jResultScrim">
+  <div class="sheet" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="jResultTitle">
+    <div class="sheet-head">
+      <div class="result-hero">
+        <div class="avatar" id="jResAvatar"></div>
+        <div>
+          <h2 class="result-title" id="jResultTitle">이겼어요!</h2>
+          <div class="result-sub" id="jResultSub"></div>
+        </div>
+      </div>
+      <button class="icon-btn" id="jResultClose" type="button" aria-label="닫고 판 보기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div id="jResultBody"></div>
+    <div class="rquote" id="jResultQuote"></div>
+    <div class="row-btns">
+      <button class="btn primary" id="jResAgain" type="button">한 판 더</button>
+      <button class="btn" id="jResSetup" type="button">상대 바꾸기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 장기: 기권 확인 -->
+<div class="scrim" id="jConfirmScrim">
+  <div class="sheet" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="jConfirmTitle">
+    <h2 id="jConfirmTitle">기권할까요?</h2>
+    <p style="margin:0;color:var(--muted)">이번 장기 판은 패배로 기록돼요.</p>
+    <div class="row-btns">
+      <button class="btn" id="jConfirmNo" type="button">계속 둘래요</button>
+      <button class="btn primary" id="jConfirmYes" type="button">기권하기</button>
     </div>
   </div>
 </div>
@@ -2142,9 +2322,6 @@ self.onmessage = async (e) => {
     const s = snapshot();
     if (s.moves) store.set(STORE_KEY, s); else store.del(STORE_KEY);
   }
-  if (window.claude && window.claude.hot && window.claude.hot.snapshot) {
-    try { window.claude.hot.snapshot(() => snapshot()); } catch (e) { /* 무시 */ }
-  }
 
   // ---- 게임 흐름 ----
   function rebuild() {
@@ -2180,6 +2357,7 @@ self.onmessage = async (e) => {
   }
 
   function onBoardTap(p, ptype) {
+    if (G.phase === 'setup') { openSetup(); return; }
     if (p < 0) return;
     if (G.phase === 'scoring') {
       if (G.busy || !G.dead) return;
@@ -2426,7 +2604,7 @@ self.onmessage = async (e) => {
     const sz = document.getElementById('size' + prefs.size); if (sz) sz.checked = true;
     const cl = document.getElementById(prefs.color === 'white' ? 'colW' : prefs.color === 'random' ? 'colR' : 'colB'); if (cl) cl.checked = true;
     buildSetup();
-    $('#setupClose').hidden = !(G.phase === 'play' || G.phase === 'scoring' || G.phase === 'over');
+    $('#setupClose').hidden = false;
     $('#btnStart').textContent = G.phase === 'play' ? '이 판 접고 새로 시작' : '대국 시작';
     openScrim('setupScrim');
   }
@@ -2488,7 +2666,6 @@ self.onmessage = async (e) => {
     say(pick(CHAR[G.level].aiWin));
     finishGame({ winner: G.ai, by: 'resign', resigner: G.user });
   });
-  $('#btnNew').addEventListener('click', openSetup);
   $('#setupClose').addEventListener('click', () => closeScrim('setupScrim'));
   $('#btnStart').addEventListener('click', startFromSetup);
   document.querySelectorAll('input[name="color"]').forEach((r) => r.addEventListener('change', buildSetupKeepSel));
@@ -2516,7 +2693,7 @@ self.onmessage = async (e) => {
     else if ($('#resultScrim').classList.contains('open')) closeScrim('resultScrim');
     else if ($('#setupScrim').classList.contains('open') && !$('#setupClose').hidden) closeScrim('setupScrim');
   });
-  document.querySelectorAll('.scrim').forEach((s) => s.addEventListener('click', (e) => {
+  ['setupScrim', 'resultScrim', 'confirmScrim'].map((id) => document.getElementById(id)).forEach((s) => s.addEventListener('click', (e) => {
     if (e.target !== s) return;
     if (s.id === 'setupScrim' && $('#setupClose').hidden) return;
     closeScrim(s.id);
@@ -2550,11 +2727,980 @@ self.onmessage = async (e) => {
       G.board = new Board(G.size); G.phase = 'setup';
       setupGrid(); renderPlayers(); renderAll();
       say(pick(CHAR[G.level].greet));
-      openSetup();
     }
   }
+  window.Buddies = { Sound, toast, store, avatarSVG, openScrim, closeScrim, iga, pick, sleep };
+  window.BadukApp = {
+    start, snapshot, openSetup,
+    onShow() { if (G.phase === 'setup' && !this.shown) { this.shown = true; openSetup(); } }
+  };
+})();
+</script>
+<script id="janggi-src">
+// ===== 장기 엔진 =====
+// 판: 길이 90 배열, 칸 = y*9 + x (y 0 = 위쪽 한 진영, y 9 = 아래쪽 초 진영)
+// 기물: 초는 양수, 한은 음수. 1 궁, 2 사, 3 상, 4 마, 5 차, 6 포, 7 졸(병)
+const JanggiEngine = (() => {
+  const K = 1, A = 2, E = 3, H = 4, R = 5, C = 6, P = 7;
+  const CHO = 1, HAN = -1, PASS = -1;
+  const VAL = [0, 0, 300, 300, 500, 1300, 700, 200];
+  const PTS = [0, 0, 3, 3, 5, 13, 7, 2];
+  const MATE = 30000;
+  const sq = (x, y) => y * 9 + x;
+  const inB = (x, y) => x >= 0 && x < 9 && y >= 0 && y < 10;
+  const inPalace = (x, y, side) => x >= 3 && x <= 5 && (side === HAN ? y >= 0 && y <= 2 : y >= 7 && y <= 9);
+  const DX = [1, -1, 0, 0], DY = [0, 0, 1, -1];
+
+  // 궁성 대각선
+  const DIAG = Array.from({ length: 90 }, () => []);
+  const LINES_OF = Array.from({ length: 90 }, () => []);
+  for (const top of [0, 7]) {
+    const c = sq(4, top + 1);
+    for (const k of [sq(3, top), sq(5, top), sq(3, top + 2), sq(5, top + 2)]) { DIAG[k].push(c); DIAG[c].push(k); }
+    for (const L of [[sq(3, top), c, sq(5, top + 2)], [sq(5, top), c, sq(3, top + 2)]])
+      for (let i = 0; i < 3; i++) LINES_OF[L[i]].push({ L, i });
+  }
+
+  // 상차림: 왼쪽부터 (x1, x2, x6, x7) — 자기 쪽에서 본 왼쪽→오른쪽
+  const SETUPS = { '마상마상': [H, E, H, E], '상마상마': [E, H, E, H], '마상상마': [H, E, E, H], '상마마상': [E, H, H, E] };
+  function initialBoard(choSetup, hanSetup) {
+    const b = new Array(90).fill(0);
+    const place = (side, arr) => {
+      // 아래쪽(초) 기준 좌표를 만들고, 한은 위아래·좌우를 뒤집는다
+      const put = (x, y, t) => { if (side === CHO) b[sq(x, y)] = t; else b[sq(8 - x, 9 - y)] = -t; };
+      put(0, 9, R); put(8, 9, R); put(3, 9, A); put(5, 9, A); put(4, 8, K);
+      put(1, 9, arr[0]); put(2, 9, arr[1]); put(6, 9, arr[2]); put(7, 9, arr[3]);
+      put(1, 7, C); put(7, 7, C);
+      for (const x of [0, 2, 4, 6, 8]) put(x, 6, P);
+    };
+    place(CHO, SETUPS[choSetup] || SETUPS['마상상마']);
+    place(HAN, SETUPS[hanSetup] || SETUPS['마상상마']);
+    return b;
+  }
+
+  // 의사 합법수 생성 (자기 궁이 장군에 걸리는지는 확인하지 않음)
+  function gen(b, side, out, capsOnly) {
+    let n = 0;
+    const own = (q) => q !== 0 && (q > 0) === (side > 0);
+    const push = (f, to) => {
+      const q = b[to];
+      if (q !== 0 && (q > 0) === (side > 0)) return;
+      if (capsOnly && q === 0) return;
+      out[n++] = f * 90 + to;
+    };
+    for (let s = 0; s < 90; s++) {
+      const p = b[s];
+      if (p === 0 || (p > 0) !== (side > 0)) continue;
+      const t = p > 0 ? p : -p, x = s % 9, y = (s / 9) | 0;
+      if (t === K || t === A) {
+        for (let d = 0; d < 4; d++) { const nx = x + DX[d], ny = y + DY[d]; if (inPalace(nx, ny, side)) push(s, sq(nx, ny)); }
+        for (const to of DIAG[s]) push(s, to);
+      } else if (t === R) {
+        for (let d = 0; d < 4; d++) {
+          let nx = x + DX[d], ny = y + DY[d];
+          while (inB(nx, ny)) { const to = sq(nx, ny); if (b[to] === 0) push(s, to); else { if (!own(b[to])) push(s, to); break; } nx += DX[d]; ny += DY[d]; }
+        }
+        for (const { L, i } of LINES_OF[s]) for (const dir of [-1, 1]) {
+          for (let j = i + dir; j >= 0 && j <= 2; j += dir) { const to = L[j]; if (b[to] === 0) push(s, to); else { if (!own(b[to])) push(s, to); break; } }
+        }
+      } else if (t === C) {
+        for (let d = 0; d < 4; d++) {
+          let nx = x + DX[d], ny = y + DY[d], screen = false;
+          while (inB(nx, ny)) {
+            const to = sq(nx, ny), q = b[to];
+            if (!screen) { if (q !== 0) { if (q === C || q === -C) break; screen = true; } }
+            else if (q === 0) push(s, to);
+            else { if (!own(q) && q !== C && q !== -C) push(s, to); break; }
+            nx += DX[d]; ny += DY[d];
+          }
+        }
+        for (const { L, i } of LINES_OF[s]) {
+          if (i === 1) continue;
+          const mid = b[L[1]], to = L[2 - i], q = b[to];
+          if (mid === 0 || mid === C || mid === -C) continue;
+          if (q === 0 || (!own(q) && q !== C && q !== -C)) push(s, to);
+        }
+      } else if (t === H) {
+        for (let d = 0; d < 4; d++) {
+          const mx = x + DX[d], my = y + DY[d];
+          if (!inB(mx, my) || b[sq(mx, my)] !== 0) continue;
+          for (const sgn of [-1, 1]) {
+            const nx = DX[d] ? x + 2 * DX[d] : x + sgn, ny = DY[d] ? y + 2 * DY[d] : y + sgn;
+            if (inB(nx, ny)) push(s, sq(nx, ny));
+          }
+        }
+      } else if (t === E) {
+        for (let d = 0; d < 4; d++) {
+          const mx = x + DX[d], my = y + DY[d];
+          if (!inB(mx, my) || b[sq(mx, my)] !== 0) continue;
+          for (const sgn of [-1, 1]) {
+            const ddx = DX[d] ? DX[d] : sgn, ddy = DY[d] ? DY[d] : sgn;
+            const m2x = mx + ddx, m2y = my + ddy;
+            if (!inB(m2x, m2y) || b[sq(m2x, m2y)] !== 0) continue;
+            const nx = m2x + ddx, ny = m2y + ddy;
+            if (inB(nx, ny)) push(s, sq(nx, ny));
+          }
+        }
+      } else if (t === P) {
+        const dy = side === CHO ? -1 : 1;
+        if (inB(x, y + dy)) push(s, sq(x, y + dy));
+        if (x > 0) push(s, sq(x - 1, y));
+        if (x < 8) push(s, sq(x + 1, y));
+        for (const to of DIAG[s]) if (((to / 9) | 0) === y + dy) push(s, to);
+      }
+    }
+    return n;
+  }
+
+  function findKing(b, side) { const k = side === CHO ? K : -K; for (let s = 0; s < 90; s++) if (b[s] === k) return s; return -1; }
+  const _att = new Int32Array(256);
+  function attacked(b, target, bySide) {
+    const n = gen(b, bySide, _att, true);
+    for (let i = 0; i < n; i++) if (_att[i] % 90 === target) return true;
+    return false;
+  }
+  function inCheck(b, side) { const k = findKing(b, side); return k >= 0 && attacked(b, k, -side); }
+  function kingsFacing(b) {
+    const a = findKing(b, CHO), h = findKing(b, HAN);
+    if (a < 0 || h < 0 || a % 9 !== h % 9) return false;
+    for (let s = h + 9; s < a; s += 9) if (b[s] !== 0) return false;
+    return true;
+  }
+  const _lg = new Int32Array(256);
+  function legalMoves(b, side) {
+    const n = gen(b, side, _lg, false), out = [];
+    for (let i = 0; i < n; i++) {
+      const m = _lg[i], f = (m / 90) | 0, to = m % 90, cap = b[to];
+      b[to] = b[f]; b[f] = 0;
+      const bad = inCheck(b, side);
+      b[f] = b[to]; b[to] = cap;
+      if (!bad) out.push(m);
+    }
+    return out;
+  }
+  function points(b) {
+    let cho = 0, han = 1.5;
+    for (let s = 0; s < 90; s++) { const p = b[s]; if (p > 0) cho += PTS[p]; else if (p < 0) han += PTS[-p]; }
+    return { cho, han };
+  }
+
+  // ---- 평가 ----
+  // 초(아래쪽) 기준 위치 점수. 한은 y를 뒤집어 쓴다.
+  function pst(t, x, y) {
+    if (t === P) {
+      const adv = 6 - y;
+      let v = [0, 12, 26, 36, 44, 40, 24][Math.max(0, Math.min(6, adv))];
+      if (x >= 3 && x <= 5) v += 8;
+      if (y <= 2 && x >= 3 && x <= 5) v += 14;
+      return v;
+    }
+    if (t === H) return (x >= 2 && x <= 6 && y >= 2 && y <= 8 ? 14 : 0) - (x === 0 || x === 8 ? 14 : 0);
+    if (t === E) return x >= 2 && x <= 6 ? 6 : 0;
+    if (t === K) return x === 4 && y === 8 ? 10 : y === 7 ? -8 : 0;
+    if (t === R) return y <= 3 ? 10 : 0;
+    if (t === C) return y >= 7 ? 8 : 0;
+    return 0;
+  }
+  const PST = Array.from({ length: 8 }, (_, t) => {
+    const a = new Int16Array(90);
+    for (let s = 0; s < 90; s++) a[s] = pst(t, s % 9, (s / 9) | 0);
+    return a;
+  });
+  function evaluate(b, side) {
+    let v = 0, choA = 0, hanA = 0;
+    for (let s = 0; s < 90; s++) {
+      const p = b[s];
+      if (p > 0) { v += VAL[p] + PST[p][s]; if (p === A) choA++; }
+      else if (p < 0) { const t = -p; v -= VAL[t] + PST[t][(9 - ((s / 9) | 0)) * 9 + (s % 9)]; if (t === A) hanA++; }
+    }
+    v += (choA - hanA) * 25;   // 사가 없으면 궁이 약해진다
+    v -= 15;                    // 한의 덤 1.5 를 조금 반영
+    return v * side;
+  }
+
+  // ---- 탐색 ----
+  const TT_BITS = 18, TT_SIZE = 1 << TT_BITS, TT_MASK = TT_SIZE - 1;
+  const ttK = new Int32Array(TT_SIZE), ttM = new Int32Array(TT_SIZE), ttS = new Int32Array(TT_SIZE);
+  const ttD = new Int8Array(TT_SIZE), ttF = new Uint8Array(TT_SIZE);
+  let seed = 0x2545F491;
+  const rnd = () => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return seed | 0; };
+  const Z1 = Array.from({ length: 15 }, () => Int32Array.from({ length: 90 }, rnd));
+  const Z2 = Array.from({ length: 15 }, () => Int32Array.from({ length: 90 }, rnd));
+  const ZS1 = rnd(), ZS2 = rnd();
+  const zi = (p) => p + 7;
+
+  function search(board, side, opts) {
+    const b = board.slice();
+    const timeMs = opts.timeMs || 1000, maxDepth = opts.maxDepth || 64, noise = opts.noise || 0;
+    // 빅장(비김)은 AI에게 조금 손해로 친다. 지고 있을 때만 비기기를 노린다.
+    const rootSide = side, contempt = opts.contempt == null ? 120 : opts.contempt;
+    const drawFor = (s) => (s === rootSide ? -contempt : contempt);
+    const t0 = Date.now(), deadline = t0 + timeMs;
+    let nodes = 0, abort = false;
+    let h1 = 0, h2 = 0;
+    for (let s = 0; s < 90; s++) if (b[s]) { h1 ^= Z1[zi(b[s])][s]; h2 ^= Z2[zi(b[s])][s]; }
+    if (side === HAN) { h1 ^= ZS1; h2 ^= ZS2; }
+    const MAXPLY = 64;
+    const moveBuf = Array.from({ length: MAXPLY + 8 }, () => new Int32Array(256));
+    const scoreBuf = Array.from({ length: MAXPLY + 8 }, () => new Int32Array(256));
+    const killers = Array.from({ length: MAXPLY + 8 }, () => [0, 0]);
+    const hist = new Int32Array(90 * 90);
+
+    function make(m) {
+      const f = (m / 90) | 0, to = m % 90, p = b[f], cap = b[to];
+      h1 ^= Z1[zi(p)][f] ^ Z1[zi(p)][to] ^ ZS1; h2 ^= Z2[zi(p)][f] ^ Z2[zi(p)][to] ^ ZS2;
+      if (cap) { h1 ^= Z1[zi(cap)][to]; h2 ^= Z2[zi(cap)][to]; }
+      b[to] = p; b[f] = 0;
+      return cap;
+    }
+    function unmake(m, cap) {
+      const f = (m / 90) | 0, to = m % 90, p = b[to];
+      b[f] = p; b[to] = cap;
+      h1 ^= Z1[zi(p)][f] ^ Z1[zi(p)][to] ^ ZS1; h2 ^= Z2[zi(p)][f] ^ Z2[zi(p)][to] ^ ZS2;
+      if (cap) { h1 ^= Z1[zi(cap)][to]; h2 ^= Z2[zi(cap)][to]; }
+    }
+    function order(ply, n, ttMove) {
+      const mv = moveBuf[ply], sc = scoreBuf[ply], k = killers[ply];
+      for (let i = 0; i < n; i++) {
+        const m = mv[i], cap = b[m % 90];
+        let s;
+        if (m === ttMove) s = 1 << 29;
+        else if (cap) s = (1 << 27) + VAL[cap > 0 ? cap : -cap] * 16 - VAL[Math.abs(b[(m / 90) | 0])];
+        else if (m === k[0]) s = 1 << 26;
+        else if (m === k[1]) s = (1 << 26) - 1;
+        else s = hist[m];
+        sc[i] = s;
+      }
+    }
+    function pickNext(ply, i, n) {
+      const mv = moveBuf[ply], sc = scoreBuf[ply];
+      let bi = i;
+      for (let j = i + 1; j < n; j++) if (sc[j] > sc[bi]) bi = j;
+      if (bi !== i) { let t = mv[i]; mv[i] = mv[bi]; mv[bi] = t; t = sc[i]; sc[i] = sc[bi]; sc[bi] = t; }
+      return mv[i];
+    }
+    function qs(alpha, beta, ply, s) {
+      nodes++;
+      if ((nodes & 2047) === 0 && Date.now() > deadline) abort = true;
+      if (abort) return 0;
+      const stand = evaluate(b, s);
+      if (stand >= beta) return stand;
+      if (stand > alpha) alpha = stand;
+      if (ply >= MAXPLY) return stand;
+      const n = gen(b, s, moveBuf[ply], true);
+      order(ply, n, 0);
+      for (let i = 0; i < n; i++) {
+        const m = pickNext(ply, i, n);
+        const cap = make(m);
+        if (cap === K || cap === -K) { unmake(m, cap); return MATE - ply; }
+        if (inCheck(b, s)) { unmake(m, cap); continue; }
+        const v = -qs(-beta, -alpha, ply + 1, -s);
+        unmake(m, cap);
+        if (abort) return 0;
+        if (v >= beta) return v;
+        if (v > alpha) alpha = v;
+      }
+      return alpha;
+    }
+    function nonPawn(s) { for (let q = 0; q < 90; q++) { const p = b[q] * s; if (p === R || p === C || p === H || p === E) return true; } return false; }
+    function negamax(depth, alpha, beta, ply, s, allowNull) {
+      if (abort) return 0;
+      const chk = inCheck(b, s);
+      if (chk && ply < 40) depth++;
+      if (depth <= 0) return qs(alpha, beta, ply, s);
+      nodes++;
+      if ((nodes & 2047) === 0 && Date.now() > deadline) { abort = true; return 0; }
+      const idx = h1 & TT_MASK;
+      let ttMove = 0;
+      if (ttK[idx] === h2) {
+        ttMove = ttM[idx];
+        if (ttD[idx] >= depth && ply > 0) {
+          const v = ttS[idx], f = ttF[idx];
+          if (f === 0) return v;
+          if (f === 1 && v >= beta) return v;
+          if (f === 2 && v <= alpha) return v;
+        }
+      }
+      if (allowNull && !chk && depth >= 3 && ply > 0 && nonPawn(s)) {
+        h1 ^= ZS1; h2 ^= ZS2;
+        const v = -negamax(depth - 3, -beta, -beta + 1, ply + 1, -s, false);
+        h1 ^= ZS1; h2 ^= ZS2;
+        if (abort) return 0;
+        if (v >= beta) return v;
+      }
+      const n = gen(b, s, moveBuf[ply], false);
+      order(ply, n, ttMove);
+      let best = -MATE, bestMove = 0, legal = 0;
+      const a0 = alpha;
+      for (let i = 0; i < n; i++) {
+        const m = pickNext(ply, i, n);
+        const cap = make(m);
+        if (cap === K || cap === -K) { unmake(m, cap); return MATE - ply; }
+        if (inCheck(b, s)) { unmake(m, cap); continue; }
+        legal++;
+        let v;
+        if (kingsFacing(b)) v = drawFor(s);   // 빅장: 비김
+        else if (legal === 1) v = -negamax(depth - 1, -beta, -alpha, ply + 1, -s, true);
+        else {
+          v = -negamax(depth - 1, -alpha - 1, -alpha, ply + 1, -s, true);
+          if (v > alpha && v < beta) v = -negamax(depth - 1, -beta, -alpha, ply + 1, -s, true);
+        }
+        unmake(m, cap);
+        if (abort) return 0;
+        if (v > best) { best = v; bestMove = m; }
+        if (v > alpha) alpha = v;
+        if (alpha >= beta) {
+          if (!cap) { const kk = killers[ply]; if (kk[0] !== m) { kk[1] = kk[0]; kk[0] = m; } hist[m] += depth * depth; }
+          break;
+        }
+      }
+      if (legal === 0) {
+        if (chk) return -MATE + ply;
+        // 둘 수 없으면 한 수 쉰다
+        h1 ^= ZS1; h2 ^= ZS2;
+        const v = -negamax(depth - 1, -beta, -alpha, ply + 1, -s, false);
+        h1 ^= ZS1; h2 ^= ZS2;
+        return v;
+      }
+      ttK[idx] = h2; ttM[idx] = bestMove; ttS[idx] = best; ttD[idx] = depth;
+      ttF[idx] = best <= a0 ? 2 : best >= beta ? 1 : 0;
+      return best;
+    }
+
+    // 루트
+    const rootMoves = legalMoves(b, side);
+    if (rootMoves.length === 0) return { move: PASS, score: 0, depth: 0, nodes: 0 };
+    let bestMove = rootMoves[0], bestScore = 0, doneDepth = 0;
+    if (noise > 0) {
+      // 수마다 정확한 점수를 구하고 잡음을 섞어 고른다 (하·중)
+      const scored = rootMoves.map((m) => ({ m, v: 0 }));
+      for (let d = 1; d <= maxDepth; d++) {
+        let ok = true;
+        for (const r of scored) {
+          const cap = make(r.m);
+          const v = kingsFacing(b) ? drawFor(side) : -negamax(d - 1, -MATE, MATE, 1, -side, true);
+          unmake(r.m, cap);
+          if (abort) { ok = false; break; }
+          r.v = v;
+        }
+        if (!ok) break;
+        doneDepth = d;
+        if (Date.now() - t0 > timeMs * 0.5) break;
+      }
+      let bv = -1e9;
+      for (const r of scored) {
+        const v = r.v + (Math.random() * 2 - 1) * noise;
+        if (v > bv) { bv = v; bestMove = r.m; bestScore = r.v; }
+      }
+      return { move: bestMove, score: bestScore, depth: doneDepth, nodes };
+    }
+    for (let d = 1; d <= maxDepth; d++) {
+      let alpha = -MATE - 1, iterBest = 0, iterScore = -MATE - 1;
+      // 이전 최선수를 먼저
+      rootMoves.sort((a, c) => (a === bestMove ? -1 : c === bestMove ? 1 : 0));
+      for (const m of rootMoves) {
+        const cap = make(m);
+        let v;
+        if (kingsFacing(b)) v = drawFor(side);
+        else if (iterBest === 0) v = -negamax(d - 1, -MATE - 1, -alpha, 1, -side, true);
+        else {
+          v = -negamax(d - 1, -alpha - 1, -alpha, 1, -side, true);
+          if (v > alpha) v = -negamax(d - 1, -MATE - 1, -alpha, 1, -side, true);
+        }
+        unmake(m, cap);
+        if (abort) break;
+        if (v > iterScore) { iterScore = v; iterBest = m; }
+        if (v > alpha) alpha = v;
+      }
+      if (abort) break;
+      bestMove = iterBest; bestScore = iterScore; doneDepth = d;
+      if (Math.abs(bestScore) > MATE - 100) break;
+      if (Date.now() - t0 > timeMs * 0.55) break;
+    }
+    return { move: bestMove, score: bestScore, depth: doneDepth, nodes };
+  }
+
+  return { K, A, E, H, R, C, P, CHO, HAN, PASS, PTS, SETUPS, initialBoard, gen, legalMoves, inCheck, kingsFacing, points, evaluate, search, findKing };
+})();
+if (typeof module !== 'undefined') module.exports = JanggiEngine;
+
+</script>
+<script>
+// ===== 장기 화면 =====
+(() => {
+  'use strict';
+  const JE = JanggiEngine;
+  const { CHO, HAN, PASS, K, A, E, H, R, C, P } = JE;
+  const { Sound, toast, store, avatarSVG, openScrim, closeScrim, iga, pick, sleep } = window.Buddies;
+  const $ = (s) => document.querySelector(s);
+  const JCS = 100, JM = 70;
+  const SAVE_KEY = 'buddies-janggi-game-v1', STATS_KEY = 'buddies-janggi-stats-v1', PREF_KEY = 'buddies-janggi-prefs-v1';
+  const LV = [{ timeMs: 300, maxDepth: 2, noise: 200 }, { timeMs: 800, maxDepth: 4, noise: 40 }, { timeMs: 2500 }];
+  const LV_KEY = ['easy', 'mid', 'hard'];
+  const SETUP_NAMES = Object.keys(JE.SETUPS);
+  const MAX_MOVES = 200;
+
+  const JCHAR = [
+    {
+      name: '콩이', lv: '하', title: '입문', desc: '장기 배운 지 사흘. 잡을 수 있으면 일단 잡아요.',
+      greet: ['장기도 재밌어요! 살살 해 주세요.', '제가 차를 좋아하거든요. 시작해요!'],
+      move: ['여기로 갈래요!', '헤헤, 움직였어요.', '이거 좋은 수 맞죠?', '음, 이쪽으로!'],
+      capAI: ['냠! 잡았다!', '앗싸, 하나 먹었어요!'],
+      capUser: ['어, 내 기물이!', '으앙, 잡혔다…'],
+      check: ['장군!', '장군이에요! 맞죠?'], escape: ['멍군!', '휴, 멍군이에요.'],
+      pass: ['둘 게 없어서 한 수 쉴게요.'], hint: ['힌트 봤죠? 괜찮아요.'], undo: ['무르기? 좋아요!'],
+      resign: ['항복이에요… 너무 잘해요!'], aiWin: ['제가 이겼어요? 우와!'], aiLose: ['역시 잘하시네요! 한 판 더 해요.'],
+      draw: ['빅장이에요! 비겼네요.']
+    },
+    {
+      name: '몽이', lv: '중', title: '중급', desc: '공원 장기판 단골. 몇 수 앞까지 읽어요.',
+      greet: ['장기 한 판 해 볼까요?', '오늘은 외통으로 이겨 볼게요.'],
+      move: ['이 정도면 괜찮죠.', '흐음, 이렇게 받을게요.', '좋은 승부네요.', '이 수는 어때요?'],
+      capAI: ['이건 제가 가져갈게요.', '빈틈이 보였어요!'],
+      capUser: ['앗, 놓쳤다.', '제법인데요?'],
+      check: ['장군!', '장군 받으세요!'], escape: ['멍군!', '멍군이요. 쉽지 않죠?'],
+      pass: ['한 수 쉴게요.'], hint: ['힌트 썼죠? 다 봤어요.'], undo: ['한 번 봐 드릴게요.'],
+      resign: ['졌어요. 기권할게요!'], aiWin: ['좋은 판이었어요. 또 해요.'], aiLose: ['분하다… 다음엔 안 질 거예요!'],
+      draw: ['빅장이네요. 이번엔 비겼어요.']
+    },
+    {
+      name: '돌왕', lv: '상', title: '고수', desc: '수읽기의 왕. 외통수를 노려요.',
+      greet: ['봐주지 않을 거예요.', '준비됐나요? 시작하죠.'],
+      move: ['계산대로예요.', '흐름은 제 쪽이네요.', '여기가 급소예요.', '흠, 그렇게 오셨군요.'],
+      capAI: ['욕심이 과했네요.', '그 기물은 이미 끝났어요.'],
+      capUser: ['오, 날카롭네요.', '그걸 보다니!'],
+      check: ['장군.', '장군입니다.'], escape: ['멍군.', '그 정도로는 안 잡혀요.'],
+      pass: ['한 수 쉬겠습니다.'], hint: ['힌트로는 저를 못 이겨요.'], undo: ['무르기라… 이번만이에요.'],
+      resign: ['제 패배예요. 대단해요.'], aiWin: ['다음엔 더 날카롭게 와 주세요.'], aiLose: ['완벽하게 졌어요. 존경합니다.'],
+      draw: ['빅장… 비긴 걸로 하죠.']
+    }
+  ];
+  const HANJA = { [CHO]: ['', '楚', '士', '象', '馬', '車', '包', '卒'], [HAN]: ['', '漢', '士', '象', '馬', '車', '包', '兵'] };
+  const HANGUL = { [CHO]: ['', '초', '사', '상', '마', '차', '포', '졸'], [HAN]: ['', '한', '사', '상', '마', '차', '포', '병'] };
+  const SIZE = [0, 46, 32, 39, 39, 39, 39, 32];
+  const sideName = (s) => (s === CHO ? '초' : '한');
+
+  const prefs = Object.assign({ level: 1, side: 'cho', setup: '마상상마', labels: 'hanja' }, store.get(PREF_KEY) || {});
+  let stats = store.get(STATS_KEY) || {};
+  const J = {
+    user: CHO, ai: HAN, level: 1, choSetup: '마상상마', hanSetup: '마상상마', labels: 'hanja',
+    board: JE.initialBoard('마상상마', '마상상마'), ids: new Array(90).fill(0), moves: [],
+    phase: 'setup', busy: false, thinking: false, token: 0, sel: -1, targets: [], passes: 0,
+    result: null, hints: 0, hint: null, nextId: 1
+  };
+
+  const el = {
+    svg: $('#jSvg'), grid: $('#jGrid'), marks: $('#jMarks'), pieces: $('#jPieces'), targets: $('#jTargets'), board: $('#jBoard'),
+    oppBar: $('#jOppBar'), meBar: $('#jMeBar'), oppAvatar: $('#jOppAvatar'), oppName: $('#jOppName'), oppLv: $('#jOppLv'),
+    oppSide: $('#jOppSide'), meSide: $('#jMeSide'), meIcon: $('#jMeIcon'), meSub: $('#jMeSub'), bubble: $('#jOppBubble'),
+    oppPts: $('#jOppPts'), mePts: $('#jMePts'), status: $('#jStatus'), meta: $('#jMeta'), tip: $('#jTip'), score: $('#jScore'),
+    actPlay: $('#jActPlay'), actOver: $('#jActOver'), btnUndo: $('#jBtnUndo'), btnHint: $('#jBtnHint'), btnPass: $('#jBtnPass'), btnResign: $('#jBtnResign')
+  };
+
+  // ---- AI 워커 ----
+  const W_MAIN = `self.onmessage = (e) => { const m = e.data; const r = JanggiEngine.search(m.board, m.side, m.opts); self.postMessage(Object.assign({ id: m.id }, r)); };`;
+  const AIW = {
+    w: null, failed: false, seq: 0, pending: null,
+    get() {
+      if (this.w || this.failed) return this.w;
+      try {
+        const src = document.getElementById('janggi-src').textContent + '\n' + W_MAIN;
+        this.w = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+        this.w.onmessage = (e) => { const p = this.pending; if (p && e.data.id === p.id) { this.pending = null; p.resolve(e.data); } };
+        this.w.onerror = (e) => { if (e && e.preventDefault) e.preventDefault(); this.failed = true; this.w = null; const p = this.pending; this.pending = null; if (p) p.resolve(this.local(p.args)); };
+      } catch (e) { this.failed = true; this.w = null; }
+      return this.w;
+    },
+    local(args) { return JE.search(args.board, args.side, args.opts); },
+    search(board, side, opts) {
+      const args = { board: board.slice(), side, opts };
+      const w = this.get();
+      if (!w) return new Promise((res) => setTimeout(() => res(this.local(args)), 30));
+      return new Promise((resolve) => {
+        const id = ++this.seq;
+        this.pending = { id, resolve, args };
+        w.postMessage({ id, board: args.board, side, opts });
+      });
+    },
+    cancel() {
+      if (this.pending && this.w) { this.w.terminate(); this.w = null; this.pending = null; }
+    }
+  };
+
+  // ---- 그리기 ----
+  const flip = () => J.user === HAN;
+  const pos = (s) => { let x = s % 9, y = (s / 9) | 0; if (flip()) { x = 8 - x; y = 9 - y; } return [JM + x * JCS, JM + y * JCS]; };
+  const oct = (r) => { const pts = []; for (let k = 0; k < 8; k++) { const a = (Math.PI / 8) + k * Math.PI / 4; pts.push((r * Math.cos(a)).toFixed(1) + ',' + (r * Math.sin(a)).toFixed(1)); } return pts.join(' '); };
+  function drawGrid() {
+    let h = '';
+    const L = (x1, y1, x2, y2, cls) => `<line class="${cls}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+    for (let x = 0; x < 9; x++) h += L(JM + x * JCS, JM, JM + x * JCS, JM + 9 * JCS, x === 0 || x === 8 ? 'gl edge' : 'gl');
+    for (let y = 0; y < 10; y++) h += L(JM, JM + y * JCS, JM + 8 * JCS, JM + y * JCS, y === 0 || y === 9 ? 'gl edge' : 'gl');
+    for (const top of [0, 7]) {
+      h += L(JM + 3 * JCS, JM + top * JCS, JM + 5 * JCS, JM + (top + 2) * JCS, 'gl');
+      h += L(JM + 5 * JCS, JM + top * JCS, JM + 3 * JCS, JM + (top + 2) * JCS, 'gl');
+    }
+    // 포·졸 자리 표시
+    const spots = [[1, 2], [7, 2], [1, 7], [7, 7]];
+    for (const x of [0, 2, 4, 6, 8]) spots.push([x, 3], [x, 6]);
+    for (const [x, y] of spots) {
+      const cx = JM + x * JCS, cy = JM + y * JCS, g = 9, l = 16;
+      for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+        if ((x === 0 && sx < 0) || (x === 8 && sx > 0)) continue;
+        h += `<path class="spot" d="M${cx + sx * (g + l)} ${cy + sy * g} H${cx + sx * g} V${cy + sy * (g + l)}"/>`;
+      }
+    }
+    el.grid.innerHTML = h;
+  }
+  function pieceInner(p) {
+    const side = p > 0 ? CHO : HAN, t = Math.abs(p), r = SIZE[t];
+    const label = (J.labels === 'hangul' ? HANGUL : HANJA)[side][t];
+    const cls = side === CHO ? 'cho' : 'han';
+    const fs = J.labels === 'hangul' ? r * 0.95 : r * 1.12;
+    return `<g class="jp-in"><polygon class="jp-sh" points="${oct(r)}" transform="translate(4 6)"/>` +
+      `<polygon class="jp-body" points="${oct(r)}"/><polygon class="jp-ring ${cls}" points="${oct(r * 0.8)}"/>` +
+      `<text class="jp-t ${cls}${J.labels === 'hangul' ? ' hg' : ''}" font-size="${fs.toFixed(0)}" text-anchor="middle" dominant-baseline="central" y="${J.labels === 'hangul' ? 2 : 1}">${label}</text></g>`;
+  }
+  const pieceEls = new Map();
+  function clearPieces() { pieceEls.clear(); el.pieces.innerHTML = ''; }
+  function renderPieces() {
+    const live = new Set();
+    for (let s = 0; s < 90; s++) {
+      const p = J.board[s]; if (!p) continue;
+      const id = J.ids[s]; live.add(id);
+      let g = pieceEls.get(id);
+      const [x, y] = pos(s);
+      if (!g || g._p !== p) {
+        if (g) g.remove();
+        g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'jp');
+        g._p = p;
+        g.innerHTML = pieceInner(p);
+        g.style.transform = `translate(${x}px, ${y}px)`;
+        el.pieces.appendChild(g);
+        pieceEls.set(id, g);
+      } else g.style.transform = `translate(${x}px, ${y}px)`;
+      g.classList.toggle('sel', s === J.sel);
+    }
+    for (const [id, g] of pieceEls) {
+      if (live.has(id)) continue;
+      pieceEls.delete(id);
+      g.classList.add('jpop');
+      setTimeout(() => g.remove(), 420);
+    }
+    // 선택된 기물을 맨 위로
+    if (J.sel >= 0) { const g = pieceEls.get(J.ids[J.sel]); if (g) el.pieces.appendChild(g); }
+  }
+  function renderMarks() {
+    let h = '';
+    const last = lastRealMove();
+    if (last != null) {
+      const f = (last / 90) | 0, t = last % 90, [fx, fy] = pos(f), [tx, ty] = pos(t);
+      h += `<circle class="jfrom" cx="${fx}" cy="${fy}" r="14"/><circle class="jto" cx="${tx}" cy="${ty}" r="50"/>`;
+    }
+    if (J.phase === 'play') {
+      const side = sideToMove();
+      if (JE.inCheck(J.board, side)) { const k = JE.findKing(J.board, side); if (k >= 0) { const [x, y] = pos(k); h += `<g transform="translate(${x} ${y})"><circle class="jcheck" r="56"/></g>`; } }
+    }
+    if (J.hint) {
+      for (const s of [J.hint.f, J.hint.t]) { const [x, y] = pos(s); h += `<g transform="translate(${x} ${y})"><circle class="hintring" r="48"/></g>`; }
+    }
+    el.marks.innerHTML = h;
+    let t = '';
+    for (const s of J.targets) {
+      const [x, y] = pos(s);
+      t += J.board[s] ? `<circle class="jtcap" cx="${x}" cy="${y}" r="48"/>` : `<circle class="jtdot" cx="${x}" cy="${y}" r="15"/>`;
+    }
+    el.targets.innerHTML = t;
+  }
+  function renderAll() { renderPieces(); renderMarks(); updateHUD(); }
+
+  // ---- 상태 ----
+  const sideToMove = () => (J.moves.length % 2 === 0 ? CHO : HAN);
+  function lastRealMove() { for (let i = J.moves.length - 1; i >= 0; i--) if (J.moves[i] !== PASS) return J.moves[i]; return null; }
+  function captured(side) {
+    // side가 잡은 점수
+    const start = JE.initialBoard(J.choSetup, J.hanSetup);
+    let full = 0, now = 0;
+    for (let s = 0; s < 90; s++) { const p = start[s]; if (p * side < 0) full += JE.PTS[Math.abs(p)]; const q = J.board[s]; if (q * side < 0) now += JE.PTS[Math.abs(q)]; }
+    return full - now;
+  }
+  function say(text) { el.bubble.textContent = text; el.bubble.classList.remove('fresh'); void el.bubble.offsetWidth; el.bubble.classList.add('fresh'); }
+  function sayThinking() { el.bubble.innerHTML = '<span class="dots" aria-label="생각 중"><i></i><i></i><i></i></span>'; }
+  const userCanPlay = () => J.phase === 'play' && !J.busy && sideToMove() === J.user;
+
+  function sideChip(node, side) { node.textContent = sideName(side); node.className = `side-chip ${side === CHO ? 'cho' : 'han'}`; }
+  function renderPlayers() {
+    const ch = JCHAR[J.level];
+    el.oppAvatar.innerHTML = avatarSVG(J.level, 2);
+    el.oppName.textContent = ch.name;
+    el.oppLv.textContent = `${ch.lv} · ${ch.title}`; el.oppLv.className = `lvchip lv${J.level}`;
+    sideChip(el.oppSide, J.ai); sideChip(el.meSide, J.user);
+    el.meIcon.innerHTML = `<svg viewBox="-50 -50 100 100" aria-hidden="true">${pieceInner(J.user === CHO ? K : -K)}</svg>`;
+    el.meSub.textContent = J.user === CHO ? '초 · 내가 먼저 둬요' : '한 · 덤 1.5점을 받아요';
+  }
+  function updateHUD() {
+    const ch = JCHAR[J.level], side = sideToMove(), playing = J.phase === 'play';
+    el.oppBar.classList.toggle('active', playing && side === J.ai);
+    el.meBar.classList.toggle('active', playing && side === J.user);
+    el.oppPts.textContent = captured(J.ai); el.mePts.textContent = captured(J.user);
+    el.board.classList.toggle('locked', J.busy);
+    let status = '', tip = '';
+    const inChk = playing && JE.inCheck(J.board, side);
+    if (J.phase === 'setup') { status = '새 게임을 골라 주세요'; tip = '상대와 진영을 고르면 바로 시작해요.'; }
+    else if (playing) {
+      if (J.thinking) status = `${iga(ch.name)} 생각 중…`;
+      else if (J.hinting) status = '좋은 수를 찾는 중…';
+      else if (side === J.user) status = inChk ? '장군이에요! 궁을 지키세요' : '내 차례예요';
+      else status = `${ch.name} 차례`;
+      if (J.sel >= 0) tip = '점이 찍힌 곳으로 옮길 수 있어요. 빨간 테두리는 잡을 수 있는 기물이에요.';
+      else if (J.moves.length < 2) tip = '내 기물을 탭하면 갈 수 있는 곳이 보여요. 상대 궁을 외통으로 몰면 이겨요.';
+      else tip = '궁끼리 마주 보면(빅장) 비겨요. 200수가 넘으면 점수로 가려요.';
+    } else if (J.phase === 'over' && J.result) {
+      status = J.result.winner === 0 ? '비겼어요' : J.result.winner === J.user ? '이겼어요!' : '졌어요';
+      tip = '판을 둘러보고 한 판 더 해 보세요.';
+    }
+    el.status.textContent = status; el.tip.textContent = tip;
+    const pts = JE.points(J.board);
+    el.meta.textContent = `${J.moves.length}수째 · 초 ${pts.cho}점 : 한 ${pts.han}점${J.hints ? ` · 힌트 ${J.hints}번` : ''}`;
+    el.actPlay.hidden = J.phase === 'over';
+    el.actOver.hidden = J.phase !== 'over';
+    const can = userCanPlay();
+    el.btnHint.disabled = !can; el.btnPass.disabled = !can || inChk;
+    el.btnResign.disabled = J.phase !== 'play';
+    el.btnUndo.disabled = !(J.phase === 'play' && hasUserMove() && !J.hinting);
+  }
+  function hasUserMove() { for (let i = 0; i < J.moves.length; i++) if ((i % 2 === 0 ? CHO : HAN) === J.user) return true; return false; }
+
+  // ---- 저장 ----
+  function snapshot() {
+    if (J.phase !== 'play') return {};
+    return { v: 1, user: J.user, level: J.level, choSetup: J.choSetup, hanSetup: J.hanSetup, labels: J.labels, moves: J.moves.slice(), hints: J.hints };
+  }
+  function save() { const s = snapshot(); if (s.moves) store.set(SAVE_KEY, s); else store.del(SAVE_KEY); }
+
+  // ---- 흐름 ----
+  function rebuild() {
+    J.board = JE.initialBoard(J.choSetup, J.hanSetup);
+    J.ids = J.board.map((p) => (p ? J.nextId++ : 0));
+    let side = CHO;
+    for (const m of J.moves) {
+      if (m !== PASS) { const f = (m / 90) | 0, t = m % 90; J.board[t] = J.board[f]; J.board[f] = 0; J.ids[t] = J.ids[f]; J.ids[f] = 0; }
+      side = -side;
+    }
+    clearPieces();
+  }
+  function newGame(cfg) {
+    AIW.cancel(); J.token++;
+    J.level = cfg.level; J.labels = cfg.labels;
+    J.user = cfg.side === 'random' ? (Math.random() < 0.5 ? CHO : HAN) : cfg.side === 'han' ? HAN : CHO;
+    J.ai = -J.user;
+    const aiSetup = SETUP_NAMES[(Math.random() * SETUP_NAMES.length) | 0];
+    if (J.user === CHO) { J.choSetup = cfg.setup; J.hanSetup = aiSetup; } else { J.hanSetup = cfg.setup; J.choSetup = aiSetup; }
+    J.moves = []; Object.assign(J, { phase: 'play', busy: false, thinking: false, hinting: false, sel: -1, targets: [], passes: 0, result: null, hints: 0, hint: null });
+    rebuild(); renderPlayers(); renderAll();
+    say(pick(JCHAR[J.level].greet));
+    if (cfg.side === 'random') toast(J.user === CHO ? '나는 초예요. 먼저 두세요!' : '나는 한이에요. 상대가 먼저 둬요.');
+    save();
+    if (sideToMove() === J.ai) aiTurn();
+  }
+  // 수를 두고 결과를 처리. 반환: 끝났으면 true
+  function applyMove(m, mover) {
+    const f = (m / 90) | 0, t = m % 90, cap = J.board[t];
+    J.board[t] = J.board[f]; J.board[f] = 0; J.ids[t] = J.ids[f]; J.ids[f] = 0;
+    J.moves.push(m); J.passes = 0; J.sel = -1; J.targets = []; J.hint = null;
+    Sound.stone(); if (cap) setTimeout(() => Sound.capture(1), 90);
+    renderAll();
+    if (JE.kingsFacing(J.board)) { finish({ winner: 0, by: 'bikjang' }); return true; }
+    const opp = -mover;
+    const legal = JE.legalMoves(J.board, opp);
+    if (!legal.length) {
+      if (JE.inCheck(J.board, opp)) { finish({ winner: mover, by: 'mate' }); return true; }
+      // 둘 수가 없으면 자동으로 한 수 쉰다
+      J.moves.push(PASS); J.passes = 1;
+      toast(`${opp === J.user ? '내가' : JCHAR[J.level].name + '가'} 둘 수 있는 수가 없어 한 수 쉬어요.`);
+    }
+    if (J.moves.length >= MAX_MOVES) { finishByPoints('limit'); return true; }
+    if (JE.inCheck(J.board, sideToMove())) Sound.tone([880, 1175], 0.09, 'square', 0.06);
+    return false;
+  }
+  function finishByPoints(by) {
+    const p = JE.points(J.board);
+    finish({ winner: p.cho > p.han ? CHO : HAN, by });
+  }
+
+  function onTap(s) {
+    if (J.phase === 'setup') { openSetup(); return; }
+    if (s < 0 || J.phase !== 'play') return;
+    if (J.busy) { if (J.thinking) toast(`${iga(JCHAR[J.level].name)} 생각 중이에요. 잠깐만요!`); return; }
+    if (sideToMove() !== J.user) return;
+    if (J.sel >= 0 && J.targets.includes(s)) { userMove(J.sel * 90 + s); return; }
+    const p = J.board[s];
+    if (p && (p > 0) === (J.user > 0)) {
+      if (J.sel === s) { J.sel = -1; J.targets = []; renderPieces(); renderMarks(); updateHUD(); return; }
+      const ms = JE.legalMoves(J.board, J.user).filter((m) => ((m / 90) | 0) === s);
+      J.sel = s; J.targets = ms.map((m) => m % 90);
+      Sound.stone(0.25);
+      if (!ms.length) toast(JE.inCheck(J.board, J.user) ? '장군을 막을 수 있는 수가 아니에요.' : '이 기물은 지금 움직일 곳이 없어요.');
+    } else { J.sel = -1; J.targets = []; }
+    renderPieces(); renderMarks(); updateHUD();
+  }
+  function userMove(m) {
+    const cap = J.board[m % 90];
+    const ended = applyMove(m, J.user);
+    save();
+    if (ended) return;
+    const ch = JCHAR[J.level];
+    if (JE.inCheck(J.board, J.ai)) say('앗, 장군이네요!');
+    else if (cap) say(pick(ch.capUser));
+    if (sideToMove() === J.ai) aiTurn(); else updateHUD();
+  }
+  function userPass() {
+    if (!userCanPlay() || JE.inCheck(J.board, J.user)) return;
+    J.moves.push(PASS); J.passes++; J.sel = -1; J.targets = []; J.hint = null;
+    Sound.pass(); toast('한 수 쉬었어요');
+    if (J.passes >= 2) { finishByPoints('pass'); return; }
+    renderAll(); save(); aiTurn();
+  }
+  async function aiTurn() {
+    const token = J.token, ch = JCHAR[J.level];
+    const wasInCheck = JE.inCheck(J.board, J.ai);
+    J.busy = true; J.thinking = true; sayThinking(); updateHUD();
+    await sleep(60);
+    if (token !== J.token) return;
+    const t0 = performance.now();
+    const r = await AIW.search(J.board, J.ai, LV[J.level]);
+    const wait = 450 - (performance.now() - t0);
+    if (wait > 0) await sleep(wait);
+    if (token !== J.token) return;
+    J.busy = false; J.thinking = false;
+    if (r.move === PASS || r.move == null) {
+      J.moves.push(PASS); J.passes++; Sound.pass(); say(pick(ch.pass));
+      if (J.passes >= 2) { finishByPoints('pass'); return; }
+      renderAll(); save(); return;
+    }
+    // 가망이 없으면 기권
+    if (J.level > 0 && r.score < -2600 && r.score > -20000 && J.moves.length > 30) {
+      say(pick(ch.resign)); finish({ winner: J.user, by: 'resign', resigner: J.ai }); return;
+    }
+    const cap = J.board[r.move % 90];
+    const ended = applyMove(r.move, J.ai);
+    save();
+    if (ended) return;
+    if (JE.inCheck(J.board, J.user)) say(pick(ch.check));
+    else if (wasInCheck) say(pick(ch.escape));
+    else if (cap) say(pick(ch.capAI));
+    else say(pick(ch.move));
+    updateHUD();
+    if (sideToMove() === J.ai) aiTurn();   // 내가 둘 수가 없어 자동으로 쉰 경우
+  }
+  function undo() {
+    if (J.phase !== 'play' || !hasUserMove() || J.hinting) return;
+    AIW.cancel(); J.token++; J.busy = false; J.thinking = false;
+    while (J.moves.length) {
+      const col = (J.moves.length - 1) % 2 === 0 ? CHO : HAN;
+      const m = J.moves.pop();
+      if (col === J.user && m !== PASS) break;
+    }
+    // 내 차례가 될 때까지
+    while (J.moves.length && sideToMove() !== J.user) J.moves.pop();
+    J.sel = -1; J.targets = []; J.hint = null; J.passes = 0;
+    rebuild(); renderAll(); save();
+    say(pick(JCHAR[J.level].undo));
+    if (sideToMove() === J.ai) aiTurn();
+  }
+  async function showHint() {
+    if (!userCanPlay()) return;
+    const token = J.token;
+    J.busy = true; J.hinting = true; updateHUD();
+    const r = await AIW.search(J.board, J.user, { timeMs: 1000, maxDepth: 5 });
+    if (token !== J.token) return;
+    J.busy = false; J.hinting = false;
+    if (r.move === PASS || r.move == null) { toast('둘 수 있는 수가 없어요. 한 수 쉬세요.'); updateHUD(); return; }
+    J.hint = { f: (r.move / 90) | 0, t: r.move % 90 }; J.hints++;
+    say(pick(JCHAR[J.level].hint));
+    renderMarks(); updateHUD(); save();
+  }
+  function finish(res) {
+    AIW.cancel(); J.token++;
+    Object.assign(J, { phase: 'over', busy: false, thinking: false, hinting: false, result: res, sel: -1, targets: [], hint: null });
+    const key = LV_KEY[J.level], rec = stats[key] || { w: 0, l: 0, d: 0 };
+    if (res.winner === 0) rec.d = (rec.d || 0) + 1; else if (res.winner === J.user) rec.w++; else rec.l++;
+    stats[key] = rec; store.set(STATS_KEY, stats); store.del(SAVE_KEY);
+    const ch = JCHAR[J.level];
+    if (res.winner === 0) say(pick(ch.draw));
+    else if (res.by !== 'resign') say(res.winner === J.user ? pick(ch.aiLose) : pick(ch.aiWin));
+    if (res.winner === J.user) Sound.win(); else if (res.winner !== 0) Sound.lose(); else Sound.pass();
+    renderAll();
+    setTimeout(openResult, 350);
+  }
+  function openResult() {
+    const r = J.result; if (!r) return;
+    const ch = JCHAR[J.level], won = r.winner === J.user, draw = r.winner === 0;
+    $('#jResAvatar').innerHTML = avatarSVG(J.level, 2);
+    const title = $('#jResultTitle');
+    title.textContent = draw ? '비겼어요' : won ? '이겼어요!' : '아쉽게 졌어요';
+    title.classList.toggle('win', won);
+    const reason = {
+      mate: won ? '외통으로 이겼어요' : '외통수에 걸렸어요',
+      resign: r.resigner === J.ai ? `${iga(ch.name)} 기권했어요` : '내가 기권했어요',
+      bikjang: '궁이 마주 봐서(빅장) 비겼어요',
+      limit: `${MAX_MOVES}수가 넘어 점수로 가렸어요`,
+      pass: '둘 다 한 수 쉬어서 점수로 가렸어요'
+    }[r.by];
+    $('#jResultSub').textContent = reason;
+    const p = JE.points(J.board), who = (s) => (s === J.user ? '나' : ch.name);
+    const rec = stats[LV_KEY[J.level]] || { w: 0, l: 0, d: 0 };
+    $('#jResultBody').innerHTML =
+      `<table class="rtable"><thead><tr><th></th><th>남은 기물 점수</th><th>덤</th><th>합계</th></tr></thead><tbody>` +
+      `<tr><td><span class="side-chip cho">초</span> ${who(CHO)}</td><td>${p.cho}</td><td>–</td><td class="sum">${p.cho}</td></tr>` +
+      `<tr><td><span class="side-chip han">한</span> ${who(HAN)}</td><td>${p.han - 1.5}</td><td>1.5</td><td class="sum">${p.han}</td></tr></tbody></table>` +
+      `<p class="result-sub" style="margin:10px 0 0">${ch.name} 상대 장기 전적 ${rec.w}승 ${rec.l}패${rec.d ? ` ${rec.d}무` : ''} · ${J.moves.length}수${J.hints ? ` · 힌트 ${J.hints}번` : ''}</p>`;
+    const line = draw ? pick(ch.draw) : r.by === 'resign' && r.resigner === J.ai ? pick(ch.resign) : won ? pick(ch.aiLose) : pick(ch.aiWin);
+    $('#jResultQuote').textContent = `${ch.name}: “${line}”`;
+    openScrim('jResultScrim');
+  }
+
+  // ---- 설정 시트 ----
+  function buildSetup() {
+    let h = '';
+    JCHAR.forEach((ch, i) => {
+      const rec = stats[LV_KEY[i]];
+      h += `<input class="sr" type="radio" name="jopp" id="jopp${i}" value="${i}"${i === prefs.level ? ' checked' : ''}>` +
+        `<label class="opp" for="jopp${i}"><span class="avatar">${avatarSVG(i, 2)}</span><span class="otext">` +
+        `<span class="oname">${ch.name}<span class="lvchip lv${i}">${ch.lv} · ${ch.title}</span></span>` +
+        `<span class="odesc">${ch.desc}</span>` +
+        `<span class="orec">${rec ? `장기 전적 ${rec.w}승 ${rec.l}패${rec.d ? ` ${rec.d}무` : ''}` : '아직 장기 기록이 없어요'}</span></span></label>`;
+    });
+    $('#jOppList').innerHTML = h;
+  }
+  function openSetup() {
+    const pickRadio = (name, val) => { const r = document.querySelector(`input[name="${name}"][value="${val}"]`); if (r) r.checked = true; };
+    pickRadio('jside', prefs.side); pickRadio('jsetup', prefs.setup); pickRadio('jlabels', prefs.labels);
+    buildSetup();
+    $('#jSetupClose').hidden = false;
+    $('#jBtnStart').textContent = J.phase === 'play' ? '이 판 접고 새로 시작' : '대국 시작';
+    openScrim('jSetupScrim');
+  }
+  function startFromSetup() {
+    const val = (name, d) => (document.querySelector(`input[name="${name}"]:checked`) || { value: d }).value;
+    const cfg = { level: +val('jopp', 1), side: val('jside', 'cho'), setup: val('jsetup', '마상상마'), labels: val('jlabels', 'hanja') };
+    Object.assign(prefs, cfg); store.set(PREF_KEY, prefs);
+    closeScrim('jSetupScrim');
+    newGame(cfg);
+  }
+
+  // ---- 입력 ----
+  function evPoint(e) {
+    const r = el.svg.getBoundingClientRect();
+    const vx = ((e.clientX - r.left) / r.width) * 940, vy = ((e.clientY - r.top) / r.height) * 1040;
+    let x = Math.round((vx - JM) / JCS), y = Math.round((vy - JM) / JCS);
+    if (x < 0 || y < 0 || x > 8 || y > 9) return -1;
+    if (flip()) { x = 8 - x; y = 9 - y; }
+    return y * 9 + x;
+  }
+  el.svg.addEventListener('pointerdown', () => Sound.ensure());
+  el.svg.addEventListener('click', (e) => onTap(evPoint(e)));
+  el.btnUndo.addEventListener('click', undo);
+  el.btnHint.addEventListener('click', showHint);
+  el.btnPass.addEventListener('click', userPass);
+  el.btnResign.addEventListener('click', () => { if (J.phase === 'play') openScrim('jConfirmScrim'); });
+  $('#jConfirmNo').addEventListener('click', () => closeScrim('jConfirmScrim'));
+  $('#jConfirmYes').addEventListener('click', () => {
+    closeScrim('jConfirmScrim');
+    if (J.phase !== 'play') return;
+    say(pick(JCHAR[J.level].aiWin));
+    finish({ winner: J.ai, by: 'resign', resigner: J.user });
+  });
+  $('#jSetupClose').addEventListener('click', () => closeScrim('jSetupScrim'));
+  $('#jBtnStart').addEventListener('click', startFromSetup);
+  $('#jBtnAgain').addEventListener('click', () => newGame(prefs));
+  $('#jBtnShowResult').addEventListener('click', openResult);
+  $('#jResultClose').addEventListener('click', () => closeScrim('jResultScrim'));
+  $('#jResAgain').addEventListener('click', () => { closeScrim('jResultScrim'); newGame(prefs); });
+  $('#jResSetup').addEventListener('click', () => { closeScrim('jResultScrim'); openSetup(); });
+  ['jSetupScrim', 'jResultScrim', 'jConfirmScrim'].map((id) => document.getElementById(id)).forEach((s) => s.addEventListener('click', (e) => {
+    if (e.target !== s) return;
+    if (s.id === 'jSetupScrim' && $('#jSetupClose').hidden) return;
+    closeScrim(s.id);
+  }));
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if ($('#jConfirmScrim').classList.contains('open')) closeScrim('jConfirmScrim');
+    else if ($('#jResultScrim').classList.contains('open')) closeScrim('jResultScrim');
+    else if ($('#jSetupScrim').classList.contains('open') && !$('#jSetupClose').hidden) closeScrim('jSetupScrim');
+  });
+
+  // ---- 시작 ----
+  function restore(s) {
+    if (!s || ![CHO, HAN].includes(s.user) || ![0, 1, 2].includes(s.level) || !Array.isArray(s.moves) || !JE.SETUPS[s.choSetup] || !JE.SETUPS[s.hanSetup]) return false;
+    Object.assign(J, { user: s.user, ai: -s.user, level: s.level, choSetup: s.choSetup, hanSetup: s.hanSetup, labels: s.labels === 'hangul' ? 'hangul' : 'hanja', hints: s.hints || 0 });
+    J.moves = s.moves.filter((m) => Number.isInteger(m));
+    rebuild(); J.phase = 'play';
+    renderPlayers(); renderAll();
+    say('이어서 둬요!');
+    if (sideToMove() === J.ai) aiTurn();
+    return true;
+  }
+  function start(data) {
+    drawGrid();
+    const saved = data && data.moves ? data : store.get(SAVE_KEY);
+    let ok = false;
+    if (saved) { try { ok = restore(saved); } catch (e) { console.error(e); ok = false; } }
+    if (!ok) {
+      J.level = prefs.level; J.labels = prefs.labels; J.user = prefs.side === 'han' ? HAN : CHO; J.ai = -J.user;
+      rebuild(); J.phase = 'setup';
+      renderPlayers(); renderAll();
+      say(pick(JCHAR[J.level].greet));
+    }
+  }
+  window.JanggiApp = { start, snapshot, openSetup, onShow() { if (J.phase === 'setup' && !this.shown) { this.shown = true; openSetup(); } } };
+})();
+
+</script>
+<script>
+// ---- 게임 고르기(바둑/장기)와 시작 ----
+(() => {
+  const VIEWS = ['baduk', 'janggi'];
+  const apps = { baduk: window.BadukApp, janggi: window.JanggiApp };
+  const Router = {
+    view: 'baduk',
+    show(v, quiet) {
+      if (!VIEWS.includes(v)) v = 'baduk';
+      this.view = v;
+      for (const name of VIEWS) {
+        document.getElementById('view-' + name).hidden = name !== v;
+        const t = document.getElementById('tab-' + name);
+        t.setAttribute('aria-selected', String(name === v));
+        t.tabIndex = name === v ? 0 : -1;
+      }
+      try { localStorage.setItem('buddies-view', v); } catch (e) { /* 무시 */ }
+      if (location.hash !== '#' + v) { try { history.replaceState(null, '', '#' + v); } catch (e) { /* 무시 */ } }
+      if (!quiet) window.scrollTo(0, 0);
+      if (apps[v] && apps[v].onShow) apps[v].onShow();
+    }
+  };
+  window.Router = Router;
+  document.querySelectorAll('.gtab').forEach((t) => t.addEventListener('click', () => { if (Router.view !== t.dataset.view) Router.show(t.dataset.view); }));
+  document.querySelector('.gametabs').addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    const next = Router.view === 'baduk' ? 'janggi' : 'baduk';
+    Router.show(next); document.getElementById('tab-' + next).focus();
+  });
+  window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (VIEWS.includes(h) && h !== Router.view) Router.show(h); });
+  document.getElementById('btnNew').addEventListener('click', () => apps[Router.view].openSetup());
+  const boot = (data) => {
+    data = data || {};
+    apps.baduk.start(data.baduk || {});
+    apps.janggi.start(data.janggi || {});
+    const h = location.hash.slice(1);
+    let v = VIEWS.includes(h) ? h : data.view;
+    if (!VIEWS.includes(v)) { try { v = localStorage.getItem('buddies-view'); } catch (e) { v = null; } }
+    Router.show(VIEWS.includes(v) ? v : 'baduk', true);
+  };
   const hot = window.claude && window.claude.hot;
-  if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+  if (hot && hot.snapshot) { try { hot.snapshot(() => ({ baduk: apps.baduk.snapshot(), janggi: apps.janggi.snapshot(), view: Router.view })); } catch (e) { /* 무시 */ } }
+  if (hot && hot.ready) hot.ready(boot); else boot((hot && hot.data) || {});
 })();
 </script>
 </body>

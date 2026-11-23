@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>바둑 한 판</title>
+<title>Baduk Buddies</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&family=Jua&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&text=%E6%A5%9A%E6%BC%A2%E8%BB%8A%E5%8C%85%E9%A6%AC%E8%B1%A1%E5%A3%AB%E5%8D%92%E5%85%B5%E5%B0%87&display=swap" rel="stylesheet">
 <style>
 :root {
   /* 레이아웃: 휴대폰은 한 줄(상대 → 판 → 나 → 버튼), 900px 이상은 판 + 오른쪽 패널. 대담함은 나무판 한 곳에만. */
@@ -75,7 +76,8 @@ h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 400; }
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .brand { display: flex; align-items: center; gap: 10px; }
 .brand svg { width: 34px; height: 34px; flex: none; }
-.brand h1 { font-family: var(--font-display); font-size: 26px; letter-spacing: -0.5px; line-height: 1; }
+.brand h1 { font-family: var(--font-display); font-size: clamp(19px, 5.4vw, 26px); letter-spacing: -0.5px; line-height: 1; white-space: nowrap; }
+.brand { min-width: 0; }
 .top-actions { display: flex; gap: 8px; align-items: center; }
 
 .icon-btn {
@@ -221,9 +223,9 @@ h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 400; }
 .actions.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .actions[hidden] { display: none; }
 @media (max-width: 899px) {
-  #actPlay .btn { flex-direction: column; gap: 2px; padding: 6px 4px; min-height: 60px; font-size: 15px; }
+  #actPlay .btn, #jActPlay .btn { flex-direction: column; gap: 2px; padding: 6px 4px; min-height: 60px; font-size: 15px; }
 }
-@media (min-width: 900px) { #actPlay { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 900px) { #actPlay, #jActPlay { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .scorecard { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 10px; align-items: center; font-variant-numeric: tabular-nums; font-size: 14px; }
 .scorecard[hidden] { display: none; }
 .scorecard .tot { font-family: var(--font-display); font-size: 20px; text-align: right; }
@@ -289,6 +291,48 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+
+/* 게임 탭 */
+.gametabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: min(100%, 420px); margin: 0 auto; }
+.gtab {
+  font-family: var(--font-display); font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 46px; border-radius: 14px; border: 2px solid var(--btn-edge); background: var(--surface); color: var(--ink);
+  box-shadow: 0 3px 0 var(--btn-edge); cursor: pointer; touch-action: manipulation;
+}
+.gtab svg { width: 24px; height: 24px; }
+.gtab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent-deep); box-shadow: 0 3px 0 var(--accent-deep); }
+.gtab:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.stage[hidden] { display: none; }
+
+/* 장기 */
+.jcol { width: min(100%, 560px, max(280px, calc((100vh - 330px) * 0.9))); width: min(100%, 560px, max(280px, calc((100dvh - 330px) * 0.9))); }
+@media (min-width: 900px) { .jcol { width: min(560px, max(340px, calc((100vh - 310px) * 0.9))); width: min(560px, max(340px, calc((100dvh - 310px) * 0.9))); } }
+.board.jboard { aspect-ratio: 940 / 1040; }
+.spot { fill: none; stroke: var(--grid); stroke-width: 1.4; vector-effect: non-scaling-stroke; opacity: .7; }
+.jp { transition: transform .24s cubic-bezier(.2, .8, .3, 1); cursor: pointer; }
+.jp-in { transform-box: fill-box; transform-origin: center; transition: transform .15s; }
+.jp.sel .jp-in { transform: scale(1.1) translateY(-3%); }
+.jp-sh { fill: rgba(60, 30, 0, .32); }
+.jp-body { fill: url(#jgBody); stroke: #9c7339; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+.jp-ring { fill: none; stroke-width: 1.4; vector-effect: non-scaling-stroke; opacity: .55; }
+.jp-ring.cho, .jp-t.cho { stroke: #12744a; }
+.jp-ring.han, .jp-t.han { stroke: #c3262e; }
+.jp-t { font-family: "Noto Serif KR", "Nanum Myeongjo", "AppleMyungjo", serif; font-weight: 700; stroke: none !important; pointer-events: none; }
+.jp-t.cho { fill: #12744a; } .jp-t.han { fill: #c3262e; }
+.jp-t.hg { font-family: var(--font-display); font-weight: 400; }
+.jpop { animation: jpop .4s ease-in forwards; }
+@keyframes jpop { to { opacity: 0; } }
+.jtdot { fill: var(--accent); opacity: .8; pointer-events: none; }
+.jtcap { fill: none; stroke: #e0483c; stroke-width: 3.5; vector-effect: non-scaling-stroke; pointer-events: none; }
+.jfrom { fill: rgba(43, 82, 220, .35); }
+.jto { fill: rgba(255, 214, 90, .45); }
+.jcheck { fill: rgba(224, 52, 52, .22); stroke: #e03434; stroke-width: 3; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; animation: pulse 1s ease-in-out infinite; }
+.side-chip { font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px; line-height: 1.4; color: #fff; }
+.side-chip.cho { background: #12744a; } .side-chip.han { background: #c3262e; }
+.seg4 { grid-template-columns: repeat(4, 1fr); }
+.seg2 { grid-template-columns: repeat(2, 1fr); }
+.seg4 label b { font-size: 15px; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
@@ -306,7 +350,7 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
         <circle cx="25" cy="23" r="12" fill="url(#lgW)" stroke="rgba(0,0,0,.2)"/>
         <circle cx="15" cy="16" r="12" fill="url(#lgB)"/>
       </svg>
-      <h1>바둑 한 판</h1>
+      <h1>Baduk Buddies</h1>
     </div>
     <div class="top-actions">
       <button class="icon-btn" id="btnSound" type="button" aria-label="소리 끄기"></button>
@@ -316,7 +360,16 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
     </div>
   </header>
 
-  <main class="stage">
+  <nav class="gametabs" role="tablist" aria-label="게임 고르기">
+    <button class="gtab" role="tab" id="tab-baduk" data-view="baduk" aria-selected="true" aria-controls="view-baduk" type="button">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="24" cy="22" r="11" fill="#f3efe6" stroke="rgba(0,0,0,.25)"/><circle cx="15" cy="16" r="11" fill="#22252f"/></svg>바둑
+    </button>
+    <button class="gtab" role="tab" id="tab-janggi" data-view="janggi" aria-selected="false" aria-controls="view-janggi" type="button">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><polygon points="13,3 27,3 37,13 37,27 27,37 13,37 3,27 3,13" fill="#f6e9cc" stroke="#b08a4f" stroke-width="2"/><text x="20" y="21" text-anchor="middle" dominant-baseline="central" font-size="19" font-family="Noto Serif KR, serif" font-weight="700" fill="#c3262e">將</text></svg>장기
+    </button>
+  </nav>
+
+  <main class="stage" id="view-baduk" role="tabpanel" aria-labelledby="tab-baduk">
     <section class="board-col" aria-label="대국">
       <div class="pbar" id="oppBar">
         <div class="avatar" id="oppAvatar"></div>
@@ -378,6 +431,61 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
         <button class="btn" id="btnShowResult" type="button">결과 다시 보기</button>
       </div>
       <p class="tip" id="tip">돌을 놓을 자리를 탭하세요. 상대 돌을 둘러싸면 따낼 수 있어요.</p>
+    </aside>
+  </main>
+
+  <main class="stage" id="view-janggi" role="tabpanel" aria-labelledby="tab-janggi" hidden>
+    <section class="board-col jcol" aria-label="장기 대국">
+      <div class="pbar" id="jOppBar">
+        <div class="avatar" id="jOppAvatar"></div>
+        <div class="pinfo">
+          <div class="pname"><span id="jOppName">몽이</span><span class="lvchip lv1" id="jOppLv">중</span><span class="side-chip han" id="jOppSide">한</span><span class="turn-pill">차례</span></div>
+          <div class="bubble" id="jOppBubble" aria-live="polite">장기 한 판 해요!</div>
+        </div>
+        <div class="lid" title="상대가 잡은 기물 점수">
+          <div class="lid-dish"><span id="jOppPts">0</span></div>
+          <span class="lid-label">잡은 점수</span>
+        </div>
+      </div>
+      <div class="board jboard" id="jBoard">
+        <svg id="jSvg" viewBox="0 0 940 1040" aria-label="장기판. 기물을 탭하면 갈 수 있는 곳이 보여요.">
+          <defs>
+            <radialGradient id="jgBody" cx="38%" cy="30%" r="80%"><stop offset="0" stop-color="#fffaf0"/><stop offset=".6" stop-color="#f3e3bf"/><stop offset="1" stop-color="#dcc08a"/></radialGradient>
+          </defs>
+          <g id="jGrid"></g>
+          <g id="jMarks"></g>
+          <g id="jPieces"></g>
+          <g id="jTargets"></g>
+        </svg>
+      </div>
+      <div class="pbar" id="jMeBar">
+        <div class="me-stone" id="jMeIcon"></div>
+        <div class="pinfo">
+          <div class="pname"><span>나</span><span class="side-chip cho" id="jMeSide">초</span><span class="turn-pill">차례</span></div>
+          <div class="me-sub" id="jMeSub">초 · 내가 먼저 둬요</div>
+        </div>
+        <div class="lid" title="내가 잡은 기물 점수">
+          <div class="lid-dish"><span id="jMePts">0</span></div>
+          <span class="lid-label">잡은 점수</span>
+        </div>
+      </div>
+    </section>
+    <aside class="side">
+      <div>
+        <div class="status" id="jStatus" aria-live="polite">새 게임을 골라 주세요</div>
+        <div class="meta" id="jMeta"></div>
+      </div>
+      <div class="actions" id="jActPlay">
+        <button class="btn" id="jBtnUndo" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>무르기</button>
+        <button class="btn" id="jBtnHint" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21.5h4"/><path d="M12 2.5a6.5 6.5 0 0 0-3.8 11.8c.6.5.9 1.1.9 1.8V16h5.8v-.1c0-.7.3-1.3.9-1.8A6.5 6.5 0 0 0 12 2.5z"/></svg>힌트</button>
+        <button class="btn" id="jBtnPass" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5v13l9-6.5z"/><path d="M18.5 5.5v13"/></svg>한수쉼</button>
+        <button class="btn" id="jBtnResign" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 21V3.5"/><path d="M5.5 4h12l-2.5 4.5L17.5 13h-12"/></svg>기권</button>
+      </div>
+      <div class="actions two" id="jActOver" hidden>
+        <button class="btn primary" id="jBtnAgain" type="button">한 판 더</button>
+        <button class="btn" id="jBtnShowResult" type="button">결과 다시 보기</button>
+      </div>
+      <p class="tip" id="jTip"></p>
     </aside>
   </main>
 </div>
@@ -442,6 +550,78 @@ input:focus-visible + .opp, input:focus-visible + label { outline: 3px solid var
     <div class="row-btns">
       <button class="btn" id="confirmNo" type="button">계속 둘래요</button>
       <button class="btn primary" id="confirmYes" type="button">기권하기</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 장기: 새 게임 -->
+<div class="scrim" id="jSetupScrim">
+  <div class="sheet" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="jSetupTitle">
+    <div class="sheet-head">
+      <h2 id="jSetupTitle">장기, 누구랑 둘까요?</h2>
+      <button class="icon-btn" id="jSetupClose" type="button" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="opps" id="jOppList" role="radiogroup" aria-label="상대 고르기"></div>
+    <div class="field">
+      <div class="flabel" id="jlblSide">내 진영</div>
+      <div class="seg" role="radiogroup" aria-labelledby="jlblSide">
+        <input class="sr" type="radio" name="jside" id="jsideC" value="cho"><label for="jsideC"><b>초</b><small>내가 먼저</small></label>
+        <input class="sr" type="radio" name="jside" id="jsideH" value="han"><label for="jsideH"><b>한</b><small>덤 1.5 받기</small></label>
+        <input class="sr" type="radio" name="jside" id="jsideR" value="random"><label for="jsideR"><b>무작위</b><small>운에 맡기기</small></label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="flabel" id="jlblSetup">내 상차림 <small style="font-family:var(--font-body);font-size:12px;color:var(--muted)">(내 쪽에서 본 왼쪽부터)</small></div>
+      <div class="seg seg4" role="radiogroup" aria-labelledby="jlblSetup">
+        <input class="sr" type="radio" name="jsetup" id="jsu1" value="마상상마"><label for="jsu1"><b>마상상마</b></label>
+        <input class="sr" type="radio" name="jsetup" id="jsu2" value="상마마상"><label for="jsu2"><b>상마마상</b></label>
+        <input class="sr" type="radio" name="jsetup" id="jsu3" value="마상마상"><label for="jsu3"><b>마상마상</b></label>
+        <input class="sr" type="radio" name="jsetup" id="jsu4" value="상마상마"><label for="jsu4"><b>상마상마</b></label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="flabel" id="jlblLabels">기물 글자</div>
+      <div class="seg seg2" role="radiogroup" aria-labelledby="jlblLabels">
+        <input class="sr" type="radio" name="jlabels" id="jlbH" value="hanja"><label for="jlbH"><b>車 한자</b><small>진짜 장기처럼</small></label>
+        <input class="sr" type="radio" name="jlabels" id="jlbK" value="hangul"><label for="jlbK"><b>차 한글</b><small>처음이라면</small></label>
+      </div>
+    </div>
+    <button class="btn primary big" id="jBtnStart" type="button">대국 시작</button>
+    <p class="fine">상대 궁을 외통으로 몰면 이겨요. 궁끼리 마주 보면(빅장) 비기고, 200수가 넘으면 남은 기물 점수로 가려요(한 +1.5).</p>
+  </div>
+</div>
+
+<!-- 장기: 결과 -->
+<div class="scrim" id="jResultScrim">
+  <div class="sheet" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="jResultTitle">
+    <div class="sheet-head">
+      <div class="result-hero">
+        <div class="avatar" id="jResAvatar"></div>
+        <div>
+          <h2 class="result-title" id="jResultTitle">이겼어요!</h2>
+          <div class="result-sub" id="jResultSub"></div>
+        </div>
+      </div>
+      <button class="icon-btn" id="jResultClose" type="button" aria-label="닫고 판 보기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div id="jResultBody"></div>
+    <div class="rquote" id="jResultQuote"></div>
+    <div class="row-btns">
+      <button class="btn primary" id="jResAgain" type="button">한 판 더</button>
+      <button class="btn" id="jResSetup" type="button">상대 바꾸기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 장기: 기권 확인 -->
+<div class="scrim" id="jConfirmScrim">
+  <div class="sheet" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="jConfirmTitle">
+    <h2 id="jConfirmTitle">기권할까요?</h2>
+    <p style="margin:0;color:var(--muted)">이번 장기 판은 패배로 기록돼요.</p>
+    <div class="row-btns">
+      <button class="btn" id="jConfirmNo" type="button">계속 둘래요</button>
+      <button class="btn primary" id="jConfirmYes" type="button">기권하기</button>
     </div>
   </div>
 </div>
@@ -998,9 +1178,6 @@ self.onmessage = async (e) => {
     const s = snapshot();
     if (s.moves) store.set(STORE_KEY, s); else store.del(STORE_KEY);
   }
-  if (window.claude && window.claude.hot && window.claude.hot.snapshot) {
-    try { window.claude.hot.snapshot(() => snapshot()); } catch (e) { /* 무시 */ }
-  }
 
   // ---- 게임 흐름 ----
   function rebuild() {
@@ -1036,6 +1213,7 @@ self.onmessage = async (e) => {
   }
 
   function onBoardTap(p, ptype) {
+    if (G.phase === 'setup') { openSetup(); return; }
     if (p < 0) return;
     if (G.phase === 'scoring') {
       if (G.busy || !G.dead) return;
@@ -1282,7 +1460,7 @@ self.onmessage = async (e) => {
     const sz = document.getElementById('size' + prefs.size); if (sz) sz.checked = true;
     const cl = document.getElementById(prefs.color === 'white' ? 'colW' : prefs.color === 'random' ? 'colR' : 'colB'); if (cl) cl.checked = true;
     buildSetup();
-    $('#setupClose').hidden = !(G.phase === 'play' || G.phase === 'scoring' || G.phase === 'over');
+    $('#setupClose').hidden = false;
     $('#btnStart').textContent = G.phase === 'play' ? '이 판 접고 새로 시작' : '대국 시작';
     openScrim('setupScrim');
   }
@@ -1344,7 +1522,6 @@ self.onmessage = async (e) => {
     say(pick(CHAR[G.level].aiWin));
     finishGame({ winner: G.ai, by: 'resign', resigner: G.user });
   });
-  $('#btnNew').addEventListener('click', openSetup);
   $('#setupClose').addEventListener('click', () => closeScrim('setupScrim'));
   $('#btnStart').addEventListener('click', startFromSetup);
   document.querySelectorAll('input[name="color"]').forEach((r) => r.addEventListener('change', buildSetupKeepSel));
@@ -1372,7 +1549,7 @@ self.onmessage = async (e) => {
     else if ($('#resultScrim').classList.contains('open')) closeScrim('resultScrim');
     else if ($('#setupScrim').classList.contains('open') && !$('#setupClose').hidden) closeScrim('setupScrim');
   });
-  document.querySelectorAll('.scrim').forEach((s) => s.addEventListener('click', (e) => {
+  ['setupScrim', 'resultScrim', 'confirmScrim'].map((id) => document.getElementById(id)).forEach((s) => s.addEventListener('click', (e) => {
     if (e.target !== s) return;
     if (s.id === 'setupScrim' && $('#setupClose').hidden) return;
     closeScrim(s.id);
@@ -1406,11 +1583,64 @@ self.onmessage = async (e) => {
       G.board = new Board(G.size); G.phase = 'setup';
       setupGrid(); renderPlayers(); renderAll();
       say(pick(CHAR[G.level].greet));
-      openSetup();
     }
   }
+  window.Buddies = { Sound, toast, store, avatarSVG, openScrim, closeScrim, iga, pick, sleep };
+  window.BadukApp = {
+    start, snapshot, openSetup,
+    onShow() { if (G.phase === 'setup' && !this.shown) { this.shown = true; openSetup(); } }
+  };
+})();
+</script>
+<script id="janggi-src">
+/*__JANGGI__*/
+</script>
+<script>
+/*__JANGGI_UI__*/
+</script>
+<script>
+// ---- 게임 고르기(바둑/장기)와 시작 ----
+(() => {
+  const VIEWS = ['baduk', 'janggi'];
+  const apps = { baduk: window.BadukApp, janggi: window.JanggiApp };
+  const Router = {
+    view: 'baduk',
+    show(v, quiet) {
+      if (!VIEWS.includes(v)) v = 'baduk';
+      this.view = v;
+      for (const name of VIEWS) {
+        document.getElementById('view-' + name).hidden = name !== v;
+        const t = document.getElementById('tab-' + name);
+        t.setAttribute('aria-selected', String(name === v));
+        t.tabIndex = name === v ? 0 : -1;
+      }
+      try { localStorage.setItem('buddies-view', v); } catch (e) { /* 무시 */ }
+      if (location.hash !== '#' + v) { try { history.replaceState(null, '', '#' + v); } catch (e) { /* 무시 */ } }
+      if (!quiet) window.scrollTo(0, 0);
+      if (apps[v] && apps[v].onShow) apps[v].onShow();
+    }
+  };
+  window.Router = Router;
+  document.querySelectorAll('.gtab').forEach((t) => t.addEventListener('click', () => { if (Router.view !== t.dataset.view) Router.show(t.dataset.view); }));
+  document.querySelector('.gametabs').addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    const next = Router.view === 'baduk' ? 'janggi' : 'baduk';
+    Router.show(next); document.getElementById('tab-' + next).focus();
+  });
+  window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (VIEWS.includes(h) && h !== Router.view) Router.show(h); });
+  document.getElementById('btnNew').addEventListener('click', () => apps[Router.view].openSetup());
+  const boot = (data) => {
+    data = data || {};
+    apps.baduk.start(data.baduk || {});
+    apps.janggi.start(data.janggi || {});
+    const h = location.hash.slice(1);
+    let v = VIEWS.includes(h) ? h : data.view;
+    if (!VIEWS.includes(v)) { try { v = localStorage.getItem('buddies-view'); } catch (e) { v = null; } }
+    Router.show(VIEWS.includes(v) ? v : 'baduk', true);
+  };
   const hot = window.claude && window.claude.hot;
-  if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+  if (hot && hot.snapshot) { try { hot.snapshot(() => ({ baduk: apps.baduk.snapshot(), janggi: apps.janggi.snapshot(), view: Router.view })); } catch (e) { /* 무시 */ } }
+  if (hot && hot.ready) hot.ready(boot); else boot((hot && hot.data) || {});
 })();
 </script>
 </body>
